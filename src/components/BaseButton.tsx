@@ -1,5 +1,6 @@
 import { Button } from "antd";
 
-export const BaseButton = () => {
+const BaseButton = () => {
     return <Button>Button</Button>
 }
+export default BaseButton;
