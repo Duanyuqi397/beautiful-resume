@@ -1,5 +1,7 @@
 import { Input } from "antd";
 
-export const BaseInput = () => {
-    return <Input>Input</Input>
+const BaseInput = () => {
+    return <Input />
 }
+
+export default BaseInput;
