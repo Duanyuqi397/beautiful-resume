@@ -1,0 +1,4 @@
+.block {
+    border: 1px solid var(--mainLine);
+    height: 100vh;
+}
