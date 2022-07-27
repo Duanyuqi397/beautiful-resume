@@ -1,13 +1,23 @@
 import { Row, Col } from "antd";
 import "./MainPage.css";
 import importComponents from "../scripts/importComponents";
+import { Component } from "../types/types";
+import renderEngine from "../fragments/renderEngine";
 
 //引入components下的组件
 const components:Record<string,any> = importComponents(
   require.context("../components/", false, /[^.]+\.tsx/)
 );
 
+const myDiv:Component = {
+  id:'div',
+  type: 'div',
+  props: {style:{backgroundColor: 'pink',width:'100px',height:'100px'}},
+  children: []
+}
+
 export const MainPage = () => {
+  console.log(components);
   return (
     <>
       <div>Header</div>
@@ -18,7 +28,7 @@ export const MainPage = () => {
               <div className="component-lib-title">组件库</div>
               <ul>
                 {Object.keys(components).map((item, index) => {
-                  return <li className="component-item" draggable={true} onDrag={onDrag}  key={index}>{item}</li>;
+                  return <li className="component-item" draggable={true} onDrag={onDrag} onDragEnd={onDropOver}  key={index}>{item}</li>;
                 })}
               </ul>
             </div>
@@ -31,6 +41,7 @@ export const MainPage = () => {
                     <Component />
                 </li>
               ))}
+              {/* {renderEngine(myDiv)} */}
             </div>
           </Col>
           <Col span={4}>
@@ -46,4 +57,8 @@ export const MainPage = () => {
 
 const onDrag = () => {
 
+}
+
+const onDropOver = () => {
+  console.log(11111);
 }
