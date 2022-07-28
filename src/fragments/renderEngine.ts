@@ -9,11 +9,12 @@ const renderEngine = (components: Component[]) => {
 
 const renderComponent = (component: Component, componentsMap: Map<string, Component>) => {
     if (component.type === "text") {
-        return component.props?.valueOf;
+        return component.props?.value;
     }
-    const children: any = component.children.length
-        && component.children
-            .map(childId => componentsMap.get(childId))
+    const children:any =
+        component.children.length &&
+        component.children
+            .map(childId => componentsMap.get(childId) as Component)
             .map(child => renderComponent(child, componentsMap));
     return React.createElement(component.type, component.props, children);
 }
