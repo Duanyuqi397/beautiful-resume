@@ -9,12 +9,17 @@ const components:Record<string,any> = importComponents(
   require.context("../components/", false, /[^.]+\.tsx/)
 );
 
-const myDiv:Component = {
+const myDiv:Component[] = [{
   id:'div',
-  type: 'div',
-  props: {style:{backgroundColor: 'pink',width:'100px',height:'100px'}},
+  type: 'button',
+  props: {style:{backgroundColor: 'pink',width:'100px',height:'100px',position:'absolute',top: '500px'}},
+  children: ['div1']
+},{
+  id:'div1',
+  type: 'text',
+  props: {value: "textButton"},
   children: []
-}
+}]
 
 export const MainPage = () => {
   console.log(components);
@@ -41,7 +46,7 @@ export const MainPage = () => {
                     <Component />
                 </li>
               ))}
-              {/* {renderEngine(myDiv)} */}
+              {renderEngine(myDiv)}
             </div>
           </Col>
           <Col span={4}>

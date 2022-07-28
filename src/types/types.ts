@@ -1,6 +1,11 @@
 export type Component = {
     id: string;
-    props?: Object;
+    props?: Cprops;
     type: string;
-    children: Array<string> | [];
+    children: string[] | [];
+}
+
+interface Cprops extends Object {
+    value?: string;
+    style?: Object
 }
