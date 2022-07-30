@@ -1,11 +1,34 @@
+import { CSSProperties, DOMAttributes } from "react";
+
 export type Component = {
     id: string;
-    props?: Cprops;
+    props: Cprops & Handlers;
     type: string;
-    children: string[] | [];
+    children: string[];
 }
 
 interface Cprops extends Object {
-    value?: string;
-    style?: Object
+    id?: string,
+    value?: string,
+    style?: CSSProperties,
+    position?: [number, number] | null,
+    draggable?: boolean,
 }
+
+interface ComponentProps extends Cprops, Handlers{
+
+}
+
+type FunctionRender = React.FC<ComponentProps>
+ 
+
+type EventHandlers = Omit<DOMAttributes<Element>, 'children'|'dangerouslySetInnerHTML'>
+
+type Handlers = {
+    [key in keyof EventHandlers]: EventHandlers
+}
+
+type Predictor<T> = (item: T) => boolean
+
+export type TypeFuncMaping = Record<string, React.FC<ComponentProps>>
+export type {Cprops, Predictor, Handlers, FunctionRender}
