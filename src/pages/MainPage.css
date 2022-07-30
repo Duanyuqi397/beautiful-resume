@@ -12,4 +12,6 @@
     padding: 10px 0;
     margin: 2px 5px;
     border-radius: 18px;
+    z-index: 100;
+    position: relative;
 }
