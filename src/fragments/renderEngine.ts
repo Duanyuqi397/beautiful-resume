@@ -1,6 +1,6 @@
 import React, { ReactElement, ReactNode } from "react";
 import { Component, Cprops, FunctionRender, Handlers, TypeFuncMaping as TypeFuncMapping } from "../types/types";
-import Draggable from "./Draggable";
+import Draggable, {DRAGABBLE_PROPS} from "./Draggable";
 
 const renderEngine = (components: Component[]) => {
     const componentsMap = new Map();
@@ -32,32 +32,21 @@ class RenderEngine{
     }
     
     private wrapWithDrag(component: ReactElement, dragProps: any){
-        if(dragProps.draggable){
-            return React.createElement(Draggable, dragProps, component)
+        if(dragProps.canDrag){
+            return React.createElement(Draggable, {...dragProps, key: component.key}, component)
         }
         return component
     }
 
-    private static DRAG_PROPS = [
-        'onDrag',
-        'position',
-        'defaultPosition',
-        'onDragEnd',
-        'draggable'
-    ]
-
     private splitDragProps(props: Cprops|Handlers){
-        const dragProps = Object.fromEntries(
-            Object
-            .entries(props)
-            .filter(([k]) => RenderEngine.DRAG_PROPS.includes(k))
-        )
-        const otherProps = Object.fromEntries(
-            Object
-            .entries(props)
-            .filter(([k]) => !RenderEngine.DRAG_PROPS.includes(k))
-        )
-        return [dragProps, otherProps]
+        const whetherDragProps = (whether: boolean) => 
+                                        ([k]: string[]) => DRAGABBLE_PROPS.has(k) === whether
+        const propsEntries = Object.entries(props)
+        const dragProps = Object.fromEntries(propsEntries.filter(whetherDragProps(true)))
+        const otherProps = Object.fromEntries(propsEntries.filter(whetherDragProps(false)))
+        const dragDataProps = dragProps.drag || {}
+        dragDataProps && delete dragProps.drag
+        return [{...dragDataProps, ...dragProps}, otherProps]
     }
 
     private renderComponent(component: Component, componentsMap: Map<string, Component>): ReactNode{
