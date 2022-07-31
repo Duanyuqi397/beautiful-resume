@@ -143,15 +143,22 @@ function useComponents(root: Omit<Component, 'id'|'children'>, handlers: Handler
     }
 
     function mergeStyle(id: string, style: Object){
-        const item = find(id)
-        const oldStyle = item.props?.style || {}
-        op.merge(byId(id), {props: {...item.props, style: {...oldStyle, ...style}}} as any)
+        mergePropsTo('style', id, style)
     }
 
     function mergeProps(id: string, props: Cprops|Handlers){
         const item = find(id)
         const oldProps = item.props
         op.merge(byId(id), {props: {...oldProps, ...props}} as any)
+    }
+
+    function mergePropsTo(field: keyof Cprops, id: string, value: Cprops[keyof Cprops]){
+        const item = find(id)
+        const old = item.props[field] || {}
+        if(typeof old !== 'object' || typeof value !== 'object'){
+            return
+        }
+        op.merge(byId(id), {props: {...item.props, [field]: {...old, ...value}}} as any)
     }
 
     function getMap(){
@@ -170,6 +177,7 @@ function useComponents(root: Omit<Component, 'id'|'children'>, handlers: Handler
             getMap,
             add,
             mergeProps,
+            mergePropsTo,
         } 
     ] as const
 }
