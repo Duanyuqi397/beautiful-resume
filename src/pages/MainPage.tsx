@@ -75,7 +75,7 @@ export const MainPage = () => {
         }),
 
         onDrag: useEvent((id, position) => {
-          op.mergeProps(id, {position: position as any})
+          op.mergePropsTo('drag', id, {position: position as any})
         })
       }
     }
@@ -87,7 +87,7 @@ export const MainPage = () => {
   }, [])
 
   function addComponent(type: string, left: number, top: number){
-    op.add(type, {draggable: true, style: {left, top, position: 'absolute'}, position: [0, 0]})
+    op.add(type, {style: {left, top, position: 'absolute'}, drag: {bound: 'parent', canDrag: true, position: [0, 0], disableArea: 10}})
   }
 
   function onDragEnd(index: number, type: string){
@@ -110,7 +110,9 @@ export const MainPage = () => {
         <Row>
           <Col span={4}>
             <div className="component-lib block">
-              <div className="component-lib-title">组件库</div>
+              <Draggable>
+                <div className="component-lib-title">组件库</div>
+              </Draggable>
               <ul>
                 {
                   Object.keys(components).map((item, index) => {
@@ -120,6 +122,7 @@ export const MainPage = () => {
                               onDrag={([x, y]) => position.set(index, [x, y])}
                               onDragEnd={() => onDragEnd(index, item)}
                               key={index}
+                              disableArea={10}
                             >
                               <li 
                                   ref={r => nameRef.current.set(index, r)}

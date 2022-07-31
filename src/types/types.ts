@@ -1,4 +1,6 @@
+import { DraggerProps } from "antd/lib/upload";
 import { CSSProperties, DOMAttributes } from "react";
+import { DragDataProps } from "../fragments/Draggable";
 
 export type Component = {
     id: string;
@@ -6,13 +8,12 @@ export type Component = {
     type: string;
     children: string[];
 }
-
+ 
 interface Cprops extends Object {
     id?: string,
     value?: string,
     style?: CSSProperties,
-    position?: [number, number] | null,
-    draggable?: boolean,
+    drag?: DragDataProps
 }
 
 interface ComponentProps extends Cprops, Handlers{
