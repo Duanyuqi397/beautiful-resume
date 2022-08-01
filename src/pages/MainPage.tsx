@@ -19,30 +19,7 @@ const components: Record<string, any> = importComponents(
   require.context("../components/", false, /[^.]+\.tsx/)
 );
 
-const myDiv: Component[] = [
-  {
-    id: "div",
-    type: "button",
-    props: {
-      style: {
-        backgroundColor: "pink",
-        width: "100px",
-        height: "100px",
-        position: "absolute",
-        top: "500px",
-      },
-    },
-    children: ["div1"],
-  },
-  {
-    id: "div1",
-    type: "text",
-    props: { value: "textButton" },
-    children: [],
-  },
-];
-
-const render = new RenderEngine(components);
+const render = new RenderEngine(components)
 
 function useEvent(callback: (id: string, event: SyntheticEvent) => void) {
   const callbackRef = useRef(callback);
@@ -105,8 +82,8 @@ export const MainPage = () => {
     containerRef.current = container;
   }, []);
 
-  function addComponent(type: string, left: number, top: number) {
-    op.add(type, {
+  function addComponent(type: string, left: number, top: number):Component {
+    return op.add(type, {
       style: { left, top, position: "absolute" },
       drag: {
         bound: "parent",
@@ -125,7 +102,8 @@ export const MainPage = () => {
     const containByContainer = contains(containerRef.current, element);
     if (containByContainer) {
       const [left, top] = offsetSet(containerRef.current, element);
-      addComponent(type, left, top);
+      const config = addComponent(type, left, top);
+      debugger
     }
     position.set(index, [0, 0]);
   }
@@ -157,6 +135,7 @@ export const MainPage = () => {
                         // onDrag={onDrag}
                         // onDragEnd={onDropOver}
                         key={index}
+                        style={{cursor: 'pointer'}}
                         //onClick = {() => addComponent(item)}
                       >
                         {item}
