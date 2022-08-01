@@ -3,6 +3,12 @@
     height: 100vh;
 }
 
+.view-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .view-area li {
     list-style: none;
 }
