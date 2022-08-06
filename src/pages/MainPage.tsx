@@ -6,6 +6,7 @@ import renderEngine, {RenderEngine} from "../fragments/renderEngine";
 import {useComponents, useMap} from '../fragments/dataHook'
 import { useState, useLayoutEffect, useRef, SyntheticEvent, useEffect, RefObject } from "react";
 import Draggable, { Position } from "../fragments/Draggable";
+import Resizeable from "../fragments/Resizeable";
 
 //引入components下的组件
 const components:Record<string,any> = importComponents(
@@ -105,6 +106,11 @@ export const MainPage = () => {
 
   return (
     <>
+      <Draggable>
+        <Resizeable defaultSize={{width: 100, height: 100}} minRize={{width: 10, height: 10}} style={{left: 500}}>
+            <div style={{backgroundColor: 'pink', width:'100%', height:'100%'}}></div>
+        </Resizeable>
+      </Draggable>
       <div>Header</div>
       <div>
         <Row>

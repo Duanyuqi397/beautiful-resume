@@ -1,4 +1,3 @@
-import { type } from '@testing-library/user-event/dist/type'
 import * as React from 'react'
 import { useState } from 'react'
 
@@ -17,13 +16,56 @@ type DragDataProps = {
     },
     bound?: 'parent',
     allowCtrl?: boolean,
-    canDrag?:boolean
+    canDrag?:boolean,
+    showResizeBox?: boolean,
 }
 
 type DragProps = React.PropsWithChildren<{
     onDrag?: DraggableEventHandler,
     onDragEnd?: DraggableEventHandler,
 } & DragDataProps>
+
+type Direction = "up"|"down"|"left"|"right"|"up-left"|"up-right"|"down-left"|"down-right"
+
+type BAR_PROPS = {
+    "direction": Direction,
+    "style": React.CSSProperties,
+}
+
+const RESIZE_BAR_PROPS: BAR_PROPS[] = [
+    {
+        "direction": "up",
+        "style": {'cursor':'n-resize', position: 'absolute', height: 5, left: 0, top: 0, width: '100%', backgroundColor: 'gray'}
+    },
+    {
+        "direction": "down",
+        "style": {'cursor':'s-resize', position: 'absolute', height: 5, left: 0, bottom: 0, width: '100%', backgroundColor: 'gray'}
+    },
+    {
+        "direction": "left",
+        "style": {'cursor':'w-resize', position: 'absolute', height: '100%', left: 0, top: 0, width: 5, backgroundColor: 'gray'}
+    },
+    {
+        "direction": "right",
+        "style": {'cursor':'e-resize', position: 'absolute', height: '100%', right: 0, bottom: 0, width: 5, backgroundColor: 'gray'}
+    },
+    {
+        "direction": "up-left",
+        "style": {'cursor':'nw-resize', position: 'absolute', height: 5, left: 0, top: 0, width: 5, backgroundColor: 'black'}
+    },
+    {
+        "direction": "up-right",
+        "style": {'cursor':'ne-resize', position: 'absolute', height: 5, right: 0, top: 0, width: 5, backgroundColor: 'black'}
+    },
+    {
+        "direction": "down-left",
+        "style": {'cursor':'sw-resize', position: 'absolute', height: 5, left: 0, bottom: 0, width: 5, backgroundColor: 'black'}
+    },
+    {
+        "direction": "down-right",
+        "style": {'cursor':'se-resize', position: 'absolute', height: 5, right: 0, bottom: 0, width: 5, backgroundColor: 'black'}
+    }
+]
 
 const DRAGABBLE_PROPS = new Set([
     "onDrag",
@@ -195,19 +237,19 @@ const Draggable: React.FC<DragProps> = (props) => {
         handleDragEnd()
         onMouseUp && onMouseUp(e)
     }
-
+    
     const wrapperedChildren = React.cloneElement(
-            React.Children.only(props.children) as React.ReactElement,
-            {
-                onMouseDown: onMouseDownWrapper, 
-                onMouseUp: onMouseUpWrapper,
-                style: { 
-                    ...style, 
-                    ...getStyle(position[0], position[1]),
-                    cursor: "move"
-                }
+        React.Children.only(props.children) as React.ReactElement,
+        {
+            onMouseDown: onMouseDownWrapper, 
+            onMouseUp: onMouseUpWrapper,
+            style: {
+                ...style, 
+                ...getStyle(position[0], position[1]),
+                cursor: "move"
             }
-        )
+        }
+    )
     
     return wrapperedChildren
 }
