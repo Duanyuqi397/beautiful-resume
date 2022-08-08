@@ -41,7 +41,7 @@ function useEvent(callback: (id: string, event: SyntheticEvent) => void){
 
 const defaultRoot: Omit<Component, 'id'|'children'> = {
   type: 'div',
-  props: {id: 'root-container', style: { backgroundColor: 'pink', position: 'relative', height: '800px' } }
+  props: {id: 'root-container', draggable: false, style: { backgroundColor: 'pink', position: 'relative', height: '800px' } }
 }
 
 function contains(container: HTMLElement, element: HTMLElement){
@@ -88,7 +88,7 @@ export const MainPage = () => {
   }, [])
 
   function addComponent(type: string, left: number, top: number){
-    op.add(type, {style: {left, top, position: 'absolute'}, drag: {bound: 'parent', canDrag: true, position: [0, 0], disableArea: 10}})
+    op.add(type,  {draggable: false, style: {left, top, position: 'absolute'}, drag: {bound: 'parent', canDrag: true, position: [0, 0], disableArea: 10}})
   }
 
   function onDragEnd(index: number, type: string){
@@ -106,11 +106,6 @@ export const MainPage = () => {
 
   return (
     <>
-      <Draggable>
-        <Resizeable defaultSize={{width: 100, height: 100}} minRize={{width: 10, height: 10}} style={{left: 500}}>
-            <div style={{backgroundColor: 'pink', width:'100%', height:'100%'}}></div>
-        </Resizeable>
-      </Draggable>
       <div>Header</div>
       <div>
         <Row>
