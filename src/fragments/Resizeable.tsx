@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useArray } from "./dataHook"
 import useMouseOffset from './mouseHook'
 
 type Size = {
@@ -18,6 +19,7 @@ type ResizeableProps = {
 }
 
 type Direction = "up"|"down"|"left"|"right"|"up-left"|"up-right"|"down-left"|"down-right"
+
 type BAR_PROPS = {
     "direction": Direction,
     "style": React.CSSProperties,
@@ -82,7 +84,7 @@ const Resizeable: React.FC<React.PropsWithChildren<ResizeableProps >> = (props) 
         ratio,
         minRize
     } = props
-
+ 
     const wrapperRef = React.useRef<HTMLDivElement|null>(null)
     const initWidth = size?.width || defaultSize?.width || 50
     const initHeight = size?.height || defaultSize?.height || 50
