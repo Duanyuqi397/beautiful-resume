@@ -3,6 +3,14 @@ import { CSSProperties } from 'react'
 import * as ReactDOM from 'react-dom'
 
 
+const RESIZE_BALL_SIZE = 9
+
+const RESIZE_BAR_BASE_STYLE: CSSProperties = {
+    position: 'fixed',
+    borderRadius: '50%',
+    backgroundColor: 'rgb(41, 182, 242)'
+}
+
 type ResizeBarProps = {
     x: number,
     y: number,
@@ -12,14 +20,6 @@ type ResizeBarProps = {
     onResizeStart?: (e: MouseEvent, direction: Direction) => void,
     onResizeEnd?: (e: MouseEvent, direction: Direction) => void,
     allowDirections?: Direction[]|undefined,
-}
-
-const RESIZE_BALL_SIZE = 9
-
-const RESIZE_BAR_BASE_STYLE: CSSProperties = {
-    position: 'fixed',
-    borderRadius: '50%',
-    backgroundColor: 'rgb(41, 182, 242)'
 }
 
 type Direction = "up"|"down"|"left"|"right"|"up-left"|"up-right"|"down-left"|"down-right"
@@ -87,11 +87,7 @@ const ALL_DIRECTIONS = [
 
 const ResizeBar: React.FC<ResizeBarProps> = (props) => {
     const {
-        x,
-        y,
-        width,
-        height,
-        ballSize=9,
+        ballSize=RESIZE_BALL_SIZE,
         onResizeStart=()=>{},
         onResizeEnd=()=>{},
         allowDirections=ALL_DIRECTIONS
@@ -100,9 +96,6 @@ const ResizeBar: React.FC<ResizeBarProps> = (props) => {
        <div>
             {
                 RESIZE_BAR_PROPS.map(prop => {
-                    if(!allowDirections.includes(prop.direction)){
-                        return null
-                    }
                     const [left, top] = prop.positionFunction({...props, size: ballSize})
                     return (
                         <div
@@ -116,6 +109,7 @@ const ResizeBar: React.FC<ResizeBarProps> = (props) => {
                                 width: ballSize,
                                 height: ballSize,
                                 zIndex: 100,
+                                visibility: allowDirections.includes(prop.direction) ? 'visible': 'hidden'
                             }}
                             onMouseDown={(e) => {
                                 onResizeStart(e as any, prop.direction)

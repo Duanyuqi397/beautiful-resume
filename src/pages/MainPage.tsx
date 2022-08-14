@@ -4,9 +4,9 @@ import importComponents from "../scripts/importComponents";
 import { Component } from "../types/types";
 import renderEngine, {RenderEngine} from "../fragments/renderEngine";
 import {useComponents, useMap} from '../fragments/dataHook'
-import { useState, useLayoutEffect, useRef, SyntheticEvent, useEffect, RefObject } from "react";
+import { useRef, useEffect} from "react";
 import Draggable, { Position } from "../fragments/Draggable";
-import Resizeable from "../fragments/Resizeable";
+import useEvent from "../fragments/eventHook";
 
 //引入components下的组件
 const components:Record<string,any> = importComponents(
@@ -27,17 +27,6 @@ const myDiv: Component[] = [{
 
 const render = new RenderEngine(components)
 
-function useEvent(callback: (id: string, event: SyntheticEvent) => void){
-  const callbackRef = useRef(callback)
-
-  useLayoutEffect(() => {
-      callbackRef.current = callback
-  })
-
-  return (id: string, event: SyntheticEvent) => {
-      callbackRef.current(id, event)
-  }
-}
 
 const defaultRoot: Omit<Component, 'id'|'children'> = {
   type: 'div',
@@ -75,8 +64,12 @@ export const MainPage = () => {
 
         }),
 
-        onDrag: useEvent((id, position) => {
+        onPositionChange: useEvent((id, position) => {
           op.mergePropsTo('drag', id, {position: position as any})
+        }),
+
+        onSizeChange: useEvent((id, size) => {
+          op.mergePropsTo('drag', id, {size: size as any})
         })
       }
     }
@@ -88,7 +81,7 @@ export const MainPage = () => {
   }, [])
 
   function addComponent(type: string, left: number, top: number){
-    op.add(type,  {draggable: false, style: {left, top, position: 'absolute'}, drag: {bound: 'parent', canDrag: true, position: [0, 0], disableArea: 10}})
+    op.add(type, {style: { left, top, position: 'absolute' }, drag: { bound: 'parent', canResize: true, canDrag: true, position: [0, 0], size: { width: 0, height: 0 }, disableArea: 10 } })
   }
 
   function onDragEnd(index: number, type: string){
@@ -120,7 +113,7 @@ export const MainPage = () => {
                     return (
                             <Draggable
                               position={position.get(index) || [0, 0]}
-                              onDrag={([x, y]) => position.set(index, [x, y])}
+                              onPositionChange={([x, y]) => position.set(index, [x, y])}
                               onDragEnd={() => onDragEnd(index, item)}
                               key={index}
                               disableArea={10}
