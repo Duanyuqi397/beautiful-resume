@@ -14,7 +14,7 @@ interface Cprops extends Object {
     value?: string,
     style?: CSSProperties,
     drag?: DragDataProps,
-    draggable?: boolean,
+    imgUrl?: string
 }
 
 interface ComponentProps extends Cprops, Handlers{
