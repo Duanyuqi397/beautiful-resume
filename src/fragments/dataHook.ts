@@ -182,4 +182,4 @@ function useComponents(root: Omit<Component, 'id'|'children'>, handlers: Handler
     ] as const
 }
 
-export {useComponents, useMap}
+export {useComponents, useMap, useArray}
