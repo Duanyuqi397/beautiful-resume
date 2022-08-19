@@ -1,10 +1,18 @@
 import { type } from '@testing-library/user-event/dist/type'
 import * as React from 'react'
 import { useState } from 'react'
+import useEvent from './eventHook'
+import useMouseOffset from './mouseHook'
+import ResizeBar, {Direction} from './ResizeBar'
 
 type Position = [number, number]
 type DraggableEventHandler = (position: Position) => void
+type SizeChangeEventHandler = (size: Size) => void
 
+type Size = {
+    width: number,
+    height: number
+}
 type DragDataProps = {
     position?: [number, number],
     defaultPosition?: [number, number],
@@ -17,20 +25,31 @@ type DragDataProps = {
     },
     bound?: 'parent',
     allowCtrl?: boolean,
-    canDrag?:boolean
+    canDrag?:boolean,
+    showResizeBox?: boolean,
+    size?: Size,
+    defaultSize?: Size,
+    ratio?: number,
+    style?: React.CSSProperties,
+    minRize?: Size,
+    canResize?: boolean
 }
+type Limit = [number, number, number, number]
 
 type DragProps = React.PropsWithChildren<{
-    onDrag?: DraggableEventHandler,
+    onSizeChange?: SizeChangeEventHandler,
+    onPositionChange?: DraggableEventHandler,
     onDragEnd?: DraggableEventHandler,
 } & DragDataProps>
 
 const DRAGABBLE_PROPS = new Set([
-    "onDrag",
+    "onPositionChange",
     "onDragEnd",
+    "onSizeChange",
     "drag",
 ])
 
+const NO_LIMIT = Array(4).fill(Infinity) as Limit
 
 function getStyle(x: number, y: number){
     return {
@@ -48,32 +67,44 @@ function getMouseButton(e: MouseEvent){
     }
 }
 
-function getParentBoundOffset(offsetPosition: Position, element: HTMLElement | undefined, box: DOMRect|undefined){
-    if(!element || !box){
-        return offsetPosition
+function calOffsetByDirection(offset: Position, direction: Direction): [number, number]{
+    let offsetWidth = 0
+    let offsetHeight = 0
+    const [width, height] = offset
+    if(direction.includes("left") || direction.includes("right")){
+        offsetWidth = direction.includes("left") ? -width : width
+    }
+    if(direction.includes("up") || direction.includes("down")){
+        offsetHeight = direction.includes("up") ? -height : height
+    }
+    return [
+        offsetWidth,
+        offsetHeight,
+    ]
+}
+
+function getParentBoundLimit(element: HTMLElement): Limit{
+    if(!element){
+        throw Error('element is not got mounted')
     }
     const parentBox = element.parentElement?.getBoundingClientRect()
     if(!parentBox){
-        return offsetPosition
+        return NO_LIMIT
     }
-    
+    let {left, right, top, bottom} = element.getBoundingClientRect()
+    return [
+        parentBox.top - top,
+        parentBox.bottom - bottom,
+        parentBox.left - left,
+        parentBox.right - right,
+    ]
+}
+
+function getBoundOffset(offsetPosition: Position, offsetLimit: Limit){
     const [offsetX, offsetY] = offsetPosition
-    let {left, right, top, bottom} = box
-    let boundX = offsetX
-    let boundY = offsetY
-
-    if(offsetX < 0){
-        boundX = Math.max(parentBox.left - left, offsetX)
-    }else{
-        boundX = Math.min(parentBox.right - right, offsetX)
-    }
-
-    if(offsetY < 0){
-        boundY = Math.max(parentBox.top - top, offsetY)
-    }else{
-        boundY = Math.min(parentBox.bottom - bottom, offsetY)
-    }
-
+    const [limitTop, limitBottom, limitLeft, limitRight] = offsetLimit
+    const boundX = offsetX < 0 ? -Math.min(Math.abs(limitLeft), -offsetX): Math.min(limitRight, offsetX)
+    const boundY = offsetY < 0 ? -Math.min(Math.abs(limitTop), -offsetY): Math.min(limitBottom, offsetY)
     return [boundX, boundY]
 
 }
@@ -81,27 +112,59 @@ function getParentBoundOffset(offsetPosition: Position, element: HTMLElement | u
 const Draggable: React.FC<DragProps> = (props) => {
     const [position, setPosition] = useState<Position>(props.position || props.defaultPosition || [0, 0])
     const startPosition = React.useRef<Position>([0, 0])
-    const dragStart = React.useRef(false)
-    const mouseStartPosition = React.useRef<Position>([0, 0])
     const targetDomRef = React.useRef<HTMLElement>()
-    const eventRef = React.useRef(handleMouseMove)
-    const boxRef = React.useRef<DOMRect>()
     const children = props.children as React.ReactElement
+    
     const onMouseDown = children.props.onMouseDown
     const onMouseUp = children.props.onMouseUp
-    const style = children.props.style || {}
+    const onClick = children.props.onClick
 
-    // sync position status in controlled mode
-    React.useLayoutEffect(() => {
-        props.position && setPosition(props.position)
-    }, [props.position])
+    const style = children.props.style || {}
+    const [showResizeBar, setShowResizeBar] = React.useState(false)
+    const [direction, setDirection] = React.useState<Direction[]>()
+    const blurByResizeRef = React.useRef(false)
+    const positionBoundLimitRef = React.useRef<Limit>(NO_LIMIT)
+    const sizeLimitRef = React.useRef<Limit>()
+
+    const {
+        size,
+        defaultSize
+    } = props
+
+    const initWidth = size?.width || defaultSize?.width 
+    const initHeight = size?.height || defaultSize?.height 
+    const directionRef = React.useRef<Direction|null>(null)
+    const [sizeState, setSize] = React.useState({width: initWidth, height: initHeight})
+    const startSizeRef = React.useRef<Size>({width: 0, height: 0})
+
+    const [moving, startMove, stopMoving] = useMouseOffset(
+        handleMoving,
+        handleDragEnd
+    )
+
+    const [resizing, startResize, stopResizing] = useMouseOffset(
+        hadleResize,
+        handleResizeEnd
+    )
 
     React.useEffect(() => {
-        return () => eventRef.current && document.body.removeEventListener('mousemove', eventRef.current)
+        setShowResizeBar(props.showResizeBox || false)
+    }, [props.showResizeBox])
+
+    React.useEffect(() => {
+        const hiddenResizeBar = () => setShowResizeBar(false)
+        document.addEventListener('scroll', hiddenResizeBar)
+        return () => {
+            document.removeEventListener('scroll', hiddenResizeBar)
+        }
     }, [])
 
     function calPosition(){
         return props.position || position
+    }
+
+    function calSize(){
+        return props.size || sizeState
     }
 
     function shouldCancle(e: MouseEvent){
@@ -135,42 +198,30 @@ const Draggable: React.FC<DragProps> = (props) => {
         }
         return false
     }
-    
-    function handleMouseMove(e: MouseEvent){
-        const [startX, startY] = calPosition()
-        const [mouseStartX, mouseStartY] = mouseStartPosition.current
-        let offsetX = e.pageX - mouseStartX
-        let offsetY = e.pageY - mouseStartY
-        if(props.bound === 'parent'){
-            [offsetX, offsetY] = getParentBoundOffset([offsetX, offsetY], targetDomRef.current, boxRef.current)
-        }
+
+    function handleMoving(offset: [number, number], e: MouseEvent){
+        setShowResizeBar(false)
+        const [startX, startY] = startPosition.current
+        let [offsetX, offsetY] = getBoundOffset(offset, positionBoundLimitRef.current)
         const nextPosition: Position = [startX + offsetX, startY + offsetY]
-        if(!dragStart.current){
-            dragStart.current = true
-            // disable userSelect to avoid content being selected during drag
-            document.body.style.userSelect = 'none'
-        }
         // ignore state update if this is a controlled component
-        if(!props.position){
-            setPosition(nextPosition)
-        }
-        props.onDrag && props.onDrag(nextPosition)
+        props.position || setPosition(nextPosition)
+        props.onPositionChange && props.onPositionChange(nextPosition)
     }
 
     function handleDragEnd(){
-        if(eventRef.current !== null){
-            document.body.removeEventListener('mousemove', eventRef.current)
-        }
-        document.body.style.userSelect = 'initial'
-        dragStart.current = false
         targetDomRef.current = undefined
         const position = calPosition()
         props.onDragEnd && props.onDragEnd(position)
     }
 
+    function calParentBoundLimit(e: HTMLElement){
+        return props.bound ? getParentBoundLimit(e) : NO_LIMIT
+    }
+
     function onMouseDownWrapper(e: MouseEvent){
         onMouseDown && onMouseDown(e)
-        if(shouldCancle(e)){
+        if(shouldCancle(e) || moving()){
             return
         }
         /**
@@ -180,36 +231,133 @@ const Draggable: React.FC<DragProps> = (props) => {
          * we should not record the start position when the mouseDown event trigger again
          * mouseDown -> mouseUp(not trigger event) -> mouseDown(aleardy in a drag process, should not record start position)
          */
-        if(dragStart.current){
-            return
-        }
         targetDomRef.current = e.currentTarget as HTMLElement
-        boxRef.current = (e.currentTarget as HTMLElement).getBoundingClientRect()
-        eventRef.current = handleMouseMove
+        positionBoundLimitRef.current = calParentBoundLimit(e.currentTarget as HTMLElement)
         startPosition.current = calPosition()
-        mouseStartPosition.current = [e.pageX, e.pageY]
-        document.body.addEventListener('mousemove', eventRef.current)
+        startMove(e)
     }
 
     function onMouseUpWrapper(e: MouseEvent){
         handleDragEnd()
+        stopMoving()
         onMouseUp && onMouseUp(e)
     }
 
-    const wrapperedChildren = React.cloneElement(
-            React.Children.only(props.children) as React.ReactElement,
-            {
-                onMouseDown: onMouseDownWrapper, 
-                onMouseUp: onMouseUpWrapper,
-                style: { 
-                    ...style, 
-                    ...getStyle(position[0], position[1]),
-                    cursor: "move"
-                }
-            }
+    function handleShowResizeBar(e: MouseEvent){
+        const target = e.currentTarget as HTMLElement
+        if(!target){
+            throw Error('dom not got mounted when click')            
+        }
+        targetDomRef.current = target
+        setShowResizeBar(true)
+        onClick && onClick(e)
+    }
+
+    function handleBlur(){
+        if(!blurByResizeRef.current){
+            setShowResizeBar(false)
+        }
+    }
+
+    function hadleResize(offset: Position, e: MouseEvent){
+        let [mouseOffsetX, mouseOffsetY] = getBoundOffset(offset, positionBoundLimitRef.current)
+        let [width, height] = directionRef.current
+                                        ? calOffsetByDirection([mouseOffsetX, mouseOffsetY], directionRef.current)
+                                        : offset
+        const newSize = {
+            width: Math.max(startSizeRef.current.width + width, props.minRize?.width || 10) ,
+            height: Math.max(startSizeRef.current.height + height, props.minRize?.height || 10)
+        }
+
+        const posOffset = [
+            startSizeRef.current.width - newSize.width,
+            startSizeRef.current.height - newSize.height,
+        ] as Position
+
+        let [nextX, nextY] = startPosition.current
+      
+        if(directionRef.current?.includes("left")){    
+            nextX = nextX + posOffset[0]
+        }
+        if(directionRef.current?.includes("up")){
+            nextY = nextY + posOffset[1]
+        }
+        props.position || setPosition(nextPosition)
+        props.size || setSize(newSize)
+        props.onPositionChange && props.onPositionChange([nextX, nextY])
+        props.onSizeChange && props.onSizeChange(newSize)
+    }
+
+    const handleResizeStart = useEvent((e: MouseEvent, direction: Direction) => {
+        if(resizing()){
+            return
+        }
+        if(!targetDomRef.current){
+            throw Error('target dom not specify when target resing')
+        } 
+        const box = (targetDomRef.current as HTMLElement).getBoundingClientRect()
+        const size = calSize()
+        startSizeRef.current = {
+            width: size.width || box.width,
+            height: size.height || box.height
+        }
+        setDirection([direction])
+        directionRef.current = direction
+        startPosition.current = calPosition()
+        blurByResizeRef.current = true
+        positionBoundLimitRef.current = calParentBoundLimit(targetDomRef.current)
+        sizeLimitRef.current = getParentBoundLimit(targetDomRef.current)
+        startResize(e)
+    })
+
+    function handleResizeEnd(e: MouseEvent){
+        blurByResizeRef.current = false
+        setDirection(undefined)
+        setShowResizeBar(false)
+        stopResizing()
+    }
+
+    let resizeBar: React.ReactNode = null
+    if(showResizeBar && targetDomRef.current && props.canResize){
+        const box = targetDomRef.current.getBoundingClientRect()
+        resizeBar = (
+            <ResizeBar 
+                key={2}
+                x={box.x}
+                y={box.y}
+                width={box.width}
+                height={box.height}
+                allowDirections={direction}
+                onResizeStart={handleResizeStart}
+                onResizeEnd={handleResizeEnd}
+            />
         )
+    }
+    const nextPosition = calPosition()
+    const nextSize = calSize()
+    const wrapperedChildren = React.cloneElement(
+        React.Children.only(props.children) as React.ReactElement,
+        {
+            onMouseDown: onMouseDownWrapper, 
+            onMouseUp: onMouseUpWrapper,
+            onClick: handleShowResizeBar,
+            onBlur: handleBlur,
+            style: {
+                ...style, 
+                ...getStyle(nextPosition[0], nextPosition[1]),
+                cursor: "move",
+                width: nextSize.width || 'auto',
+                height: nextSize.height || 'auto'
+            }
+        }
+    )
     
-    return wrapperedChildren
+    return (
+        <>
+            {wrapperedChildren}
+            {resizeBar}
+        </>
+    )
 }
 
 export default Draggable;
