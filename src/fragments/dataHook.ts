@@ -183,8 +183,4 @@ function useComponents(root: Omit<Component, 'id'|'children'>, handlers: Handler
     ] as const
 }
 
-function useConfig(id: string){
-    const [ids,setIds] = React.useState<string[]>();
-}
-
-export {useComponents, useMap}
+export {useComponents, useMap,useArray}
