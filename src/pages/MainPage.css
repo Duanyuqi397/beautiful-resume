@@ -1,3 +1,23 @@
+.header {
+    background-color: #fff;
+    height: 60px;
+    line-height: 60px;
+    text-align: start;
+    padding-left: 20px;
+    font-weight: 600;
+    font-size: medium;
+}
+
+.component-lib {
+    background-color: #fff;
+}
+
+.component-lib-title {
+    text-align: start;
+    padding: 10px 0 10px 20px;
+    font-size: medium;
+}
+
 .block {
     border: 1px solid var(--mainLine);
     height: 100vh;
@@ -7,17 +27,38 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    background-color: #E3E4E8;
 }
 
 .view-area li {
     list-style: none;
 }
 
+.config {
+    margin: 0 20px;
+}
+
+.component-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 10px;
+}
+
 .component-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     border: 1px solid var(--mainLine);
     padding: 10px 0;
     margin: 2px 5px;
     border-radius: 18px;
     z-index: 100;
     position: relative;
+    width: 30% !important;
+}
+
+.component-item img{
+    width: 40px;
+    height: 40px;
 }

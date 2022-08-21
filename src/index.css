@@ -49,7 +49,8 @@ table {
 
 /* main theme color */
 :root {
-  --mainBgc: #dadee7;
+  --mainBgc: #F6F6F6;
   --mainLine: #ebedf2;
   --lightBgc: #d3e9ff;
+  ---mainTextColor: #333
 }
