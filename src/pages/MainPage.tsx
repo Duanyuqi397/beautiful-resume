@@ -34,6 +34,18 @@ const icons: Record<string, any> = importIcons(
   require.context("../assets/", false, /[^.]+\.svg$/)
 );
 
+const mapNames: Record<string,string> = {
+  "BaseAvatar": "头像",
+  "BaseButton": "按钮",
+  "BaseUnorderedList": "无序列表",
+  "BaseOrderedList": "有序列表",
+  "BaseDivider": "分割线",
+  "BaseLink": "链接",
+  "BaseInput": "输入框",
+  "BaseImg": "图片",
+  "BaseTextArea": "文本编辑",
+};
+
 const render = new RenderEngine(components)
 
 const defaultRoot: Omit<Component, "id" | "children"> = {
@@ -130,7 +142,7 @@ export const MainPage = () => {
             <div className="component-lib block">
                 <div className="component-lib-title">基础组件</div>
               <div className="component-list">
-                {Object.keys(icons).map((item,index) => {
+                {Object.keys(components).map((item,index) => {
                     return (
                       <Draggable
                         position={position.get(index) || [0, 0]}
@@ -144,8 +156,8 @@ export const MainPage = () => {
                           className="component-item"
                           key={index}
                         >
-                          <img src={icons[item]}/>
-                          {item}
+                          <img src={icons[mapNames[item]]}/>
+                          {mapNames[item]}
                         </div>
                       </Draggable>
                     );

@@ -13,7 +13,7 @@ const mapNames: Record<string,string> = {
 const importIcons = (req: any): Record<string, string> => {  
     const entries = req.keys().map((key: any) => [req(key).substring(14,req(key).indexOf('.')),req(key)]);
     let objectEntries = Object.fromEntries(entries);
-    let obj = new Map<string,string>();
+    let obj = new Map<string,string>(); 
     for (const key in objectEntries) {
         obj.set(mapNames[key],objectEntries[key]);
     }
