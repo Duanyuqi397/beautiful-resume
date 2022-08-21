@@ -1,4 +1,5 @@
 import { DraggerProps } from "antd/lib/upload";
+import { type } from "os";
 import { CSSProperties, DOMAttributes } from "react";
 import { DragDataProps } from "../fragments/Draggable";
 
@@ -14,7 +15,15 @@ interface Cprops extends Object {
     value?: string,
     style?: CSSProperties,
     drag?: DragDataProps,
-    imgUrl?: string
+    imgUrl?: string,
+    editor?: ConfigProps
+}
+
+type ConfigProps = {
+    name: string,
+    component: string,
+    position?:{},
+    style?:{}
 }
 
 interface ComponentProps extends Cprops, Handlers{
@@ -33,4 +42,4 @@ type Handlers = {
 type Predictor<T> = (item: T) => boolean
 
 export type TypeFuncMaping = Record<string, React.FC<ComponentProps>>
-export type {Cprops, Predictor, Handlers, FunctionRender}
+export type {Cprops, Predictor, Handlers, FunctionRender,ConfigProps}
