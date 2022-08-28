@@ -1,21 +1,37 @@
 .header {
     background-color: #fff;
+    display: flex;
+    align-items: center;
     height: 60px;
-    line-height: 60px;
     text-align: start;
     padding-left: 20px;
     font-weight: 600;
     font-size: medium;
+    box-shadow: 0px 5px 10px 3px #DEDEDE;
+    position: relative;
+    z-index: 100;
+}
+
+img {
+    width: 24px;
+    height: 24px;
+    margin-right: 6px;
 }
 
 .component-lib {
     background-color: #fff;
+    box-shadow: 5px 0px 10px 2px #DEDEDE;
+    position: relative;
+    z-index: 90;
 }
 
-.component-lib-title {
+.component-lib-title, 
+.config-panel-title {
     text-align: start;
     padding: 10px 0 10px 20px;
     font-size: medium;
+    display: flex;
+    align-items: center;
 }
 
 .block {
@@ -38,6 +54,12 @@
     margin: 0 20px;
 }
 
+.config-panel {
+    box-shadow: -5px 0px 10px 2px #DEDEDE;
+    position: relative;
+    z-index: 90;
+}
+
 .component-list {
     display: flex;
     flex-wrap: wrap;
@@ -53,7 +75,7 @@
     padding: 10px 0;
     margin: 2px 5px;
     border-radius: 18px;
-    z-index: 100;
+    /* z-index: 100; */
     position: relative;
     width: 30% !important;
 }
