@@ -1,8 +1,8 @@
 import { Row, Col } from "antd";
 import "./MainPage.css";
 import importComponents from "../scripts/importComponents";
-import { Component, ConfigProps } from "../types/types";
-import renderEngine, { RenderEngine } from "../fragments/renderEngine";
+import { Component } from "../types/types";
+import { RenderEngine } from "../fragments/renderEngine";
 import ConfigPanel from "../fragments/ConfigPanel";
 import { useComponents, useMap } from "../fragments/dataHook";
 import {
@@ -18,6 +18,9 @@ import useEvent from "../fragments/eventHook";
 import { useConfig } from "../fragments/configEngine";
 import importConfigs from "../scripts/importConfigs";
 import importIcons from "../scripts/importIcons";
+import edit from "../assets/others/edit.svg";
+import dictionary from "../assets/others/dictionary.svg";
+import config from "../assets/others/config.svg";
 
 //引入components下的组件
 const components: Record<string, any> = importComponents(
@@ -77,9 +80,8 @@ function offsetSet(container: HTMLElement, element: HTMLElement) {
 }
 
 export const MainPage = () => { 
-  console.log(icons);
-  console.log(components);
   const [element,operation] = useConfig(configs);
+  const [activeId,setActiveId] = useState<string>('');
   const position = useMap<number, [number, number]>(new Map());
   const containerRef = useRef<HTMLElement | null>(null);
   const nameRef = useRef<Map<number, HTMLElement | null>>(new Map());
@@ -88,6 +90,11 @@ export const MainPage = () => {
         onMouseDown: useEvent((id, e) => {}),
 
         onMouseUp: useEvent((id, e) => {}),
+
+        onClick: useEvent((id,e) => {
+          setActiveId(id)
+          operation.getConfig(op.find(id))
+        }),
 
         onPositionChange: useEvent((id, position) => {
             op.mergePropsTo('drag', id, {position: position as any})
@@ -128,19 +135,26 @@ export const MainPage = () => {
     if (containByContainer) {
       const [left, top] = offsetSet(containerRef.current, element);
       const newComponent = addComponent(type, left, top);
-      const currentConfig = operation.addConfig(newComponent);
+      debugger  
+      operation.initConfig(newComponent);
     }
     position.set(index, [0, 0]);
   }
 
   return (
     <div>
-      <div className="header">编辑自定义组件</div>
+      <div className="header">
+        <img src={edit} alt='' />  
+        编辑自定义组件
+      </div>
       <div>
         <Row>
           <Col span={4}>
             <div className="component-lib block">
-                <div className="component-lib-title">基础组件</div>
+                <div className="component-lib-title">
+                  <img src={dictionary} alt='' />  
+                  基础组件
+                </div>
               <div className="component-list">
                 {Object.keys(components).map((item,index) => {
                     return (
@@ -156,49 +170,28 @@ export const MainPage = () => {
                           className="component-item"
                           key={index}
                         >
-                          <img src={icons[mapNames[item]]}/>
+                          <img src={icons[mapNames[item]]} alt='' draggable={false}/>
                           {mapNames[item]}
                         </div>
                       </Draggable>
                     );
                   })}
-                {/* {Object.keys(components).map((item, index) => {
-                  return (
-                    <Draggable
-                      position={position.get(index) || [0, 0]}
-                      onPositionChange={([x, y]) => position.set(index, [x, y])}
-                      onDragEnd={() => onDragEnd(index, item)}
-                      key={index}
-                      disableArea={10}
-                    >
-                      <li
-                        ref={(r) => nameRef.current.set(index, r)}
-                        className="component-item"
-                        // draggable={true}
-                        // onDrag={onDrag}
-                        // onDragEnd={onDropOver}
-                        key={index}
-                        //onClick = {() => addComponent(item)}
-                      >
-                        {item}
-                      </li>
-                    </Draggable>
-                  );
-                })} */}
               </div>
             </div>
           </Col>
           <Col span={16}>
             <div className="view-area block">
-              {/* <div className="view-area-title">预览区域</div> */}
               {render.render(op.getMap())}
             </div>
           </Col>
           <Col span={4}>
             <div className="config-panel block">
-              <div className="config-panel-title">属性配置</div>
+              <div className="config-panel-title">
+                <img src={config} alt='' />
+                属性配置
+              </div>
               <div className="config">
-                <ConfigPanel {...element} />
+                <ConfigPanel editableConfig={{...element}} component={op.find(activeId)} updateFn={operation.setConfig} />
               </div>
             </div>
           </Col>

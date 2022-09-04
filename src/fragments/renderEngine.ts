@@ -2,27 +2,9 @@ import React, { ReactElement, ReactNode } from "react";
 import { Component, Cprops, FunctionRender, Handlers, TypeFuncMaping as TypeFuncMapping } from "../types/types";
 import Draggable, {DRAGABBLE_PROPS} from "./Draggable";
 
-const renderEngine = (components: Component[]) => {
-    const componentsMap = new Map();
-    components.map(component => componentsMap.set(component.id, component));
-    return renderComponent(components[0], componentsMap);
-}
-
-const renderComponent = (component: Component, componentsMap: Map<string, Component>) => {
-    if (component.type === "text") {
-        return component.props?.value;
-    }
-    const children:any =
-            component.children
-            .map(childId => componentsMap.get(childId) as Component)
-            .map(child => renderComponent(child, componentsMap));
-    return React.createElement(component.type, component.props, children);
-}
-
 function firstLower(str: string): boolean{
     return str.length === 0 ? false: str.charCodeAt(0) > 96
 }
-
 
 class RenderEngine{
     private typeFuncMapping: TypeFuncMapping
@@ -68,5 +50,5 @@ class RenderEngine{
     }
 }
 
-export default renderEngine;
+// export default renderEngine;
 export {RenderEngine}
