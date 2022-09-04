@@ -1,25 +1,14 @@
 const baseImgEditor = {
     name:'baseImgEditor',
     component: 'BaseImg',
-    position: {
-        x: {
-            toEditor: "", 
-            toProp: "",
-            name: "x",
-            type: "number",
-            default: 0,
-        },
-        y: {
-            toEditor: "", 
-            toProp: "",
-            name: "y",
-            type: "number",
-            default: 0,
+    drag: {
+        size: {
+            width: 400,
+            height: 400
         }
     },
     style: {
-        width: '40px',
-        height: '40px'
+        boxShadow: '0px 5px 10px 3px #DEDEDE'   
     }
 }
 
