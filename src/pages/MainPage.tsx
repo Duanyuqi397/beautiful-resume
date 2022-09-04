@@ -135,7 +135,6 @@ export const MainPage = () => {
     if (containByContainer) {
       const [left, top] = offsetSet(containerRef.current, element);
       const newComponent = addComponent(type, left, top);
-      debugger  
       operation.initConfig(newComponent);
     }
     position.set(index, [0, 0]);

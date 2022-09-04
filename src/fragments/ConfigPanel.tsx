@@ -11,7 +11,6 @@ function ConfigPanel(props: {editableConfig: any, updateFn: any, component: Comp
   const onFinish = () => {
     form.validateFields().then((value) => {
       updateFn(component,value);
-      debugger
     });
   };
 
