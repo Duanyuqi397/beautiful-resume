@@ -21,7 +21,7 @@ function useConfig(configs: Record<string, Partial<ConfigProps>>) {
         return true;
     }
 
-
+    //for initConfig
     function assignProps(target: any, source: any) {
         let obj = target;
         if (typeof target !== 'object' || typeof source !== 'object') {
@@ -37,13 +37,41 @@ function useConfig(configs: Record<string, Partial<ConfigProps>>) {
         return obj;
     }
 
+    function loop(target: any, source: any) {
+        for (const key in source) {
+            if (typeof source[key] === 'object') {
+                loop(target, source[key]);
+            } else {
+                target[key] = source[key];
+            }
+        }
+        return target;
+    }
+    
+    //for setConfig
+    function mergeProps(a: any, b: any) {
+        const nb = loop({}, b);
+        function visit(obj: any) {
+            for (const key in obj) {
+                if (typeof obj[key] === 'object') {
+                    visit(obj[key]);
+                } else {
+                    if (key in nb) {
+                        obj[key] = nb[key];
+                    }
+                }
+            }
+        }
+        visit(a);
+        return a;
+    }
+
     function initConfig(component: Component) {
         //get the current component's editor
         let currentComponentProps = component.props;
         const editorValue = Object.values(configs).filter(item => item.component === component.type);
         if(!editorValue.length) return;
         const editor = editorValue[0];
-        console.log('initEditor',editor)
 
         //save the editable props of currentComponent
         if (editor.drag) {
@@ -52,7 +80,6 @@ function useConfig(configs: Record<string, Partial<ConfigProps>>) {
 
         //init the component's props with editor
         currentComponentProps = assignProps(currentComponentProps, editor);
-        console.log('init',currentComponentProps)
         setEditableProps(currentComponentProps.editor);
     }
 
@@ -66,10 +93,11 @@ function useConfig(configs: Record<string, Partial<ConfigProps>>) {
         if(isObjectValueEqual(currentComponentProps.editor,newConfig)){
            return; 
         }
+        //save current change in editor,
+        //to ensure anytime the getConfig function can get the latest change
         currentComponentProps.editor = {...newConfig};
-        console.log('editor',currentComponentProps.editor)
-        currentComponentProps = assignProps(currentComponentProps, currentComponentProps.editor);
-        console.log('set',currentComponentProps)
+        currentComponentProps = mergeProps(currentComponentProps, currentComponentProps.editor);
+        getConfig(component);
     }
 
     return [editableProps, { initConfig, getConfig, setConfig }] as const;
