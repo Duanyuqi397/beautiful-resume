@@ -1,6 +1,6 @@
 import { Component } from "../types/types";
 
-function useConfig(configs: Record<string, any>) {
+function configEngine(configs: Record<string, any>) {
     function isObjectValueEqual(a: any, b: any) {
         let aProps = Object.getOwnPropertyNames(a);
         let bProps = Object.getOwnPropertyNames(b);
@@ -61,7 +61,7 @@ function useConfig(configs: Record<string, any>) {
         return currentComponentProps;
     }
 
-    return { getEditor, initConfig, setConfig, getEditableProps, isObjectValueEqual, mergeProps } as const;
+    return { getEditor, initConfig, setConfig, isObjectValueEqual } as const;
 }
 
 function loop(target: any, source: any) {
@@ -109,4 +109,4 @@ function mergeProps(a: any, b: any) {
     return a;
 }
 
-export { useConfig, getEditableProps, mergeProps };
+export { configEngine, getEditableProps, mergeProps };
