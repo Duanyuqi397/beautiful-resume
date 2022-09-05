@@ -35,7 +35,6 @@ function useAlign(initPosition?: ComponentBox) {
             if (aligns.length >= 6) {
                 break
             }
-
             if(absLeft === left || absRight === right){
                 if (absLeft === left) {
                     aligns.push({axis: "x", offset: left})
@@ -70,12 +69,17 @@ function useAlign(initPosition?: ComponentBox) {
         return alignPositions.length > 0
     }
 
+    function removeAlign(key: string){
+        componentPositions.current.delete(key)
+    }
+
     return {
         alignPositions,
         calAlign,
         resetAlign,
         setPosition,
-        hasAlign
+        hasAlign,
+        removeAlign
     }
 }
 

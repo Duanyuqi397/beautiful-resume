@@ -138,8 +138,13 @@ export const MainPage = () => {
 
   useEffect(() => {
     function deleteComponent(e: KeyboardEvent){
-      if(e.code === 'Backspace'){
-        activeId && op.remove(activeId)
+      const target = e.target as HTMLElement
+      console.info(target.nodeName)
+      if(e.code === 'Backspace' && target.nodeName === "BODY"){
+        if(activeId){
+          op.remove(activeId)
+          align.removeAlign(activeId)
+        }
       }
     }
     document.addEventListener('keydown', deleteComponent)
@@ -153,12 +158,12 @@ export const MainPage = () => {
 
   function addComponent(type: string, left: number, top: number) {
     const component = op.add(type, {
-      style: {left, top, position: "absolute", width: 0, height: 0},
+      style: {left: 0, top: 0, position: "absolute", width: 0, height: 0},
       drag: {
         // bound: 'parent',
         canResize: true,
         canDrag: true,
-        position: [0, 0],
+        position: [left, top],
         disableArea: 10
       }
     })
@@ -176,11 +181,12 @@ export const MainPage = () => {
       const [left, top] = offsetSet(containerRef.current, element);
       const gridLeft = Math.floor(left)
       const gridTop = Math.floor(top)
-      const newComponent = addComponent(type, left, top);
+      const newComponent = addComponent(type, gridLeft, gridTop);
       const currentConfig = (operation.initConfig(newComponent)) as Component;
       const width = utils.parseNumberFromStyle(currentConfig.props.style.width)
       const height = utils.parseNumberFromStyle(currentConfig.props.style.height)
       align.setPosition(newComponent.id, [gridLeft, gridLeft + width, gridTop, gridTop + height])
+      console.info([gridLeft, gridLeft + width, gridTop, gridTop + height])
     }
     position.set(index, [0, 0]);
   }
