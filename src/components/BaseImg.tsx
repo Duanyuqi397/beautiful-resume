@@ -3,7 +3,7 @@ import { RcFile, UploadChangeParam, UploadFile } from "antd/lib/upload";
 import { useState } from "react";
 import { Cprops } from "../types/types";
 
-const BaseImg: React.FC = (props: Cprops) => {
+const BaseImg: React.FC<Cprops> = (props: Cprops) => {
   const [picUrl, setPicUrl] = useState<string>("");
   const [preview,setPreview] = useState(false);
   //ToDo:根据props的imgUrl决定用在线图片资源还是本地图片

@@ -5,14 +5,17 @@ import useEvent from './eventHook'
 type MoveEvent = (offset: [number, number], e: MouseEvent) => void
 type EndEvent = (e: MouseEvent) => void
 
+function calGrid(value: number, grip: number){
+    return Math.floor(value / grip) * grip
+}
 
-export default function useMouseOffset(moveCallBack: MoveEvent, endCallBack: EndEvent){
+export default function useMouseOffset(moveCallBack: MoveEvent, endCallBack: EndEvent, grid: number=1){
     const startPositionRef = React.useRef<[number, number]>([0, 0])
     const movingRef = React.useRef(false)
 
     const mouseMove = useEvent((e: MouseEvent) => {
         const [startX, startY] = startPositionRef.current
-        const offset: [number, number] = [e.pageX - startX, e.pageY - startY]
+        const offset: [number, number] = [calGrid(e.pageX - startX, grid), calGrid(e.pageY - startY, grid)]
         moveCallBack(offset, e)
     })
 

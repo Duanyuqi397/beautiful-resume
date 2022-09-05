@@ -18,8 +18,8 @@ const baseButtonEditor = {
         }
     },
     style: {
-        width: '400px',
-        height: '400px'
+        width: '150px',
+        height: '50px'
     }
 }
 
