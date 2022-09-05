@@ -80,21 +80,24 @@ function offsetSet(container: HTMLElement, element: HTMLElement) {
 }
 
 export const MainPage = () => { 
-  // console.log(icons);
-  // console.log(components);
+  console.log(icons);
+  console.log(components);
   const [element,operation] = useConfig(configs);
+  const [activeId,setActiveId] = useState<string>('');
   const position = useMap<number, [number, number]>(new Map());
   const containerRef = useRef<HTMLElement | null>(null);
   const nameRef = useRef<Map<number, HTMLElement | null>>(new Map());
   const align = useAlign([0, 595, 0, 842])
-  const [activiteId, setActivityId] = useState<string>()
   const [elements, op] = useComponents(defaultRoot, {
     common: {
         onMouseDown: useEvent((id, e) => {}),
 
         onMouseUp: useEvent((id, e) => {}),
 
-        onClick: useEvent((id, e) => setActivityId(id)),
+        onClick: useEvent((id,e) => {
+          setActiveId(id)
+          operation.getConfig(op.find(id))
+        }),
 
         onPositionChange: useEvent((id, position) => {
             op.mergePropsTo('drag', id, {position: position as any})
@@ -134,12 +137,12 @@ export const MainPage = () => {
   useEffect(() => {
     function deleteComponent(e: KeyboardEvent){
       if(e.code === 'Backspace'){
-        activiteId && op.remove(activiteId)
+        activeId && op.remove(activeId)
       }
     }
     document.addEventListener('keydown', deleteComponent)
     return () => document.removeEventListener("keydown", deleteComponent)
-  }, [op, activiteId])
+  }, [op, activeId])
 
   useEffect(() => {
     const container = document.getElementById("root-container")
