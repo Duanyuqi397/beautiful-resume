@@ -81,6 +81,7 @@ function useConfig(configs: Record<string, Partial<ConfigProps>>) {
         //init the component's props with editor
         currentComponentProps = assignProps(currentComponentProps, editor);
         setEditableProps(currentComponentProps.editor);
+        return component;
     }
 
     function getConfig(component: Component) {
