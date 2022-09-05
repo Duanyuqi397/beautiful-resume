@@ -15,7 +15,7 @@ import {
 } from "react";
 import Draggable, { Position } from "../fragments/Draggable";
 import useEvent from "../fragments/eventHook";
-import { useConfig } from "../fragments/configEngine";
+import { configEngine } from "../fragments/configEngine";
 import importConfigs from "../scripts/importConfigs";
 import importIcons from "../scripts/importIcons";
 import AuxiliaryLine from "../fragments/AuxiliaryLine";
@@ -89,7 +89,7 @@ function offsetSet(container: HTMLElement, element: HTMLElement) {
 }
 
 export const MainPage = () => {
-  const operation = useConfig(configs);
+  const operation = configEngine(configs);
   const [activeId, setActiveId] = useState<string>("");
   const position = useMap<number, [number, number]>(new Map());
   const containerRef = useRef<HTMLElement | null>(null);
