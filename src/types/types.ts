@@ -20,15 +20,12 @@ interface Cprops extends Object {
     style: ComponentStyle,
     drag?: DragDataProps,
     imgUrl?: string,
-    editor?: Object
+    editor?: Record<string, any>
 }
 
 type ConfigProps = {
     name: string,
     component: string,
-    drag?: {
-        size?: {}
-    },
     style?:{}
 }
 
