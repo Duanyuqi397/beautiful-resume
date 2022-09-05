@@ -1,16 +1,22 @@
 import { Button, Form, Input, Row } from "antd";
 import { useForm } from "antd/lib/form/Form";
-import { Component } from "../types/types";
+import { useEffect } from "react";
+import { Cprops } from "../types/types";
+import { getEditableProps, mergeProps } from "./configEngine";
 
-function ConfigPanel(props: {editableConfig: any, updateFn: any, component: Component}) {
-  const { editableConfig, updateFn,component } = props;
+function ConfigPanel(props: {updateFn: any, componentProps: Cprops, currentEditor: Record<string, any>}) {
+  const { updateFn, componentProps, currentEditor } = props;
+  const editableConfig = getEditableProps(componentProps,{...currentEditor.style});
   const keys = Object.keys(editableConfig);
-
   const [form] = useForm();
+
+  useEffect(() => {
+    form.setFieldsValue(editableConfig);
+  },[componentProps])
 
   const onFinish = () => {
     form.validateFields().then((value) => {
-      updateFn(component,value);
+      updateFn(mergeProps(componentProps,value));
     });
   };
 
