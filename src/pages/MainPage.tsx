@@ -18,6 +18,9 @@ import useEvent from "../fragments/eventHook";
 import { useConfig } from "../fragments/configEngine";
 import importConfigs from "../scripts/importConfigs";
 import importIcons from "../scripts/importIcons";
+import AuxiliaryLine from "../fragments/AuxiliaryLine";
+import useAlign from "../fragments/alignHook";
+import * as utils from "../scripts/utils"
 
 //引入components下的组件
 const components: Record<string, any> = importComponents(
@@ -52,7 +55,7 @@ const defaultRoot: Omit<Component, "id" | "children"> = {
   type: "div",
   props: {
     id: "root-container",
-    style: { backgroundColor: "white", position: "relative", height: "842px",width: "595px",margin: 'auto' },
+    style: { backgroundColor: "white", position: "relative", height: "842px",width: "595px",margin: 'auto'},
   },
 };
 
@@ -77,28 +80,66 @@ function offsetSet(container: HTMLElement, element: HTMLElement) {
 }
 
 export const MainPage = () => { 
-  console.log(icons);
-  console.log(components);
+  // console.log(icons);
+  // console.log(components);
   const [element,operation] = useConfig(configs);
   const position = useMap<number, [number, number]>(new Map());
   const containerRef = useRef<HTMLElement | null>(null);
   const nameRef = useRef<Map<number, HTMLElement | null>>(new Map());
+  const align = useAlign([0, 595, 0, 842])
+  const [activiteId, setActivityId] = useState<string>()
   const [elements, op] = useComponents(defaultRoot, {
     common: {
         onMouseDown: useEvent((id, e) => {}),
 
         onMouseUp: useEvent((id, e) => {}),
 
+        onClick: useEvent((id, e) => setActivityId(id)),
+
         onPositionChange: useEvent((id, position) => {
             op.mergePropsTo('drag', id, {position: position as any})
+            const component = op.find(id)
+            
+            const left = (component.props.style?.left || 0) as number
+            const top = (component.props.style?.top || 0) as number
+
+            const size = {width: component.props.style.width, height: component.props.style.height}
+
+            const [transateX, tarnsateY] = position as any
+            
+            const absLeft = left + transateX
+            const absTop = top + tarnsateY
+            const absRight = absLeft + utils.parseNumberFromStyle(size.width)
+            const absBottom = absTop + utils.parseNumberFromStyle(size.height)
+
+            align.calAlign(id, [absLeft, absRight, absTop, absBottom])
+            
         }),
 
         onSizeChange: useEvent((id, size) => {
-            op.mergePropsTo('drag', id, {size: size as any})
+            op.mergePropsTo('style', id, size as any)
+        }),
+
+        onDragEnd: useEvent((id, position) => {
+          align.resetAlign()
+        }),
+
+        onResizeEnd: useEvent((id, size) => {
+          align.resetAlign()
         })
       }
     }
   )
+
+  useEffect(() => {
+    function deleteComponent(e: KeyboardEvent){
+      if(e.code === 'Backspace'){
+        activiteId && op.remove(activiteId)
+      }
+    }
+    document.addEventListener('keydown', deleteComponent)
+    return () => document.removeEventListener("keydown", deleteComponent)
+  }, [op, activiteId])
 
   useEffect(() => {
     const container = document.getElementById("root-container")
@@ -106,17 +147,17 @@ export const MainPage = () => {
   }, [])
 
   function addComponent(type: string, left: number, top: number) {
-    return op.add(type, {
-      style: { left, top, position: "absolute" },
+    const component = op.add(type, {
+      style: {left, top, position: "absolute", width: 0, height: 0},
       drag: {
-        bound: 'parent',
+        // bound: 'parent',
         canResize: true,
         canDrag: true,
         position: [0, 0],
-        size: { width: 0, height: 0 },
         disableArea: 10
       }
     })
+    return component;
   }
 
   function onDragEnd(index: number, type: string) {
@@ -124,17 +165,31 @@ export const MainPage = () => {
     if (element === null || containerRef.current === null) {
       return;
     }
+
     const containByContainer = contains(containerRef.current, element);
     if (containByContainer) {
       const [left, top] = offsetSet(containerRef.current, element);
-      const newComponent = addComponent(type, left, top);
+      const gridLeft = Math.floor(left)
+      const gridTop = Math.floor(top)
+      const newComponent = addComponent(type, gridLeft, gridTop);
       const currentConfig = operation.addConfig(newComponent);
+      console.info(currentConfig)
+      const width = utils.parseNumberFromStyle(currentConfig.props.style.width)
+      const height = utils.parseNumberFromStyle(currentConfig.props.style.height)
+      align.setPosition(newComponent.id, [gridLeft, gridLeft + width, gridTop, gridTop + height])
     }
     position.set(index, [0, 0]);
   }
 
   return (
     <div>
+      {
+        align.hasAlign() ? (
+          <AuxiliaryLine
+            lines={align.alignPositions}
+          />
+        ): null
+      }
       <div className="header">编辑自定义组件</div>
       <div>
         <Row>
@@ -156,7 +211,7 @@ export const MainPage = () => {
                           className="component-item"
                           key={index}
                         >
-                          <img src={icons[mapNames[item]]}/>
+                          <img draggable="false" src={icons[mapNames[item]]}/>
                           {mapNames[item]}
                         </div>
                       </Draggable>
@@ -193,6 +248,7 @@ export const MainPage = () => {
               {/* <div className="view-area-title">预览区域</div> */}
               {render.render(op.getMap())}
             </div>
+            
           </Col>
           <Col span={4}>
             <div className="config-panel block">

@@ -9,11 +9,15 @@ export type Component = {
     type: string;
     children: string[];
 }
- 
+
+type ParitialRequired<T, V extends keyof T> = T & {[P in V]-?: T[P]}
+
+type ComponentStyle = ParitialRequired<CSSProperties, 'width'|'height'>
+
 interface Cprops extends Object {
     id?: string,
     value?: string,
-    style?: CSSProperties,
+    style: ComponentStyle,
     drag?: DragDataProps,
     imgUrl?: string,
     editor?: ConfigProps

@@ -1,9 +1,9 @@
-import { type } from '@testing-library/user-event/dist/type'
 import * as React from 'react'
 import { useState } from 'react'
 import useEvent from './eventHook'
 import useMouseOffset from './mouseHook'
 import ResizeBar, {Direction} from './ResizeBar'
+import * as utils from '../scripts/utils'
 
 type Position = [number, number]
 type DraggableEventHandler = (position: Position) => void
@@ -27,7 +27,6 @@ type DragDataProps = {
     allowCtrl?: boolean,
     canDrag?:boolean,
     showResizeBox?: boolean,
-    size?: Size,
     defaultSize?: Size,
     ratio?: number,
     style?: React.CSSProperties,
@@ -40,12 +39,14 @@ type DragProps = React.PropsWithChildren<{
     onSizeChange?: SizeChangeEventHandler,
     onPositionChange?: DraggableEventHandler,
     onDragEnd?: DraggableEventHandler,
+    onResizeEnd?: SizeChangeEventHandler
 } & DragDataProps>
 
 const DRAGABBLE_PROPS = new Set([
     "onPositionChange",
     "onDragEnd",
     "onSizeChange",
+    "onResizeEnd",
     "drag",
 ])
 
@@ -110,6 +111,7 @@ function getBoundOffset(offsetPosition: Position, offsetLimit: Limit){
 }
 
 const Draggable: React.FC<DragProps> = (props) => {
+    
     const [position, setPosition] = useState<Position>(props.position || props.defaultPosition || [0, 0])
     const startPosition = React.useRef<Position>([0, 0])
     const targetDomRef = React.useRef<HTMLElement>()
@@ -127,12 +129,12 @@ const Draggable: React.FC<DragProps> = (props) => {
     const sizeLimitRef = React.useRef<Limit>()
 
     const {
-        size,
         defaultSize
     } = props
-
-    const initWidth = size?.width || defaultSize?.width 
-    const initHeight = size?.height || defaultSize?.height 
+    
+    const initWidth = utils.parseNumberFromStyle(style.width) || defaultSize?.width 
+    const initHeight = utils.parseNumberFromStyle(style.height) || defaultSize?.height 
+    
     const directionRef = React.useRef<Direction|null>(null)
     const [sizeState, setSize] = React.useState({width: initWidth, height: initHeight})
     const startSizeRef = React.useRef<Size>({width: 0, height: 0})
@@ -151,20 +153,12 @@ const Draggable: React.FC<DragProps> = (props) => {
         setShowResizeBar(props.showResizeBox || false)
     }, [props.showResizeBox])
 
-    React.useEffect(() => {
-        const hiddenResizeBar = () => setShowResizeBar(false)
-        document.addEventListener('scroll', hiddenResizeBar)
-        return () => {
-            document.removeEventListener('scroll', hiddenResizeBar)
-        }
-    }, [])
-
     function calPosition(){
         return props.position || position
     }
 
     function calSize(){
-        return props.size || sizeState
+        return {width: utils.parseNumberFromStyle(style.width), height: utils.parseNumberFromStyle(style.height)}
     }
 
     function shouldCancle(e: MouseEvent){
@@ -283,7 +277,7 @@ const Draggable: React.FC<DragProps> = (props) => {
             nextY = nextY + posOffset[1]
         }
         props.position || setPosition(nextPosition)
-        props.size || setSize(newSize)
+        setSize(newSize)
         props.onPositionChange && props.onPositionChange([nextX, nextY])
         props.onSizeChange && props.onSizeChange(newSize)
     }
@@ -315,6 +309,7 @@ const Draggable: React.FC<DragProps> = (props) => {
         setDirection(undefined)
         setShowResizeBar(false)
         stopResizing()
+        props.onResizeEnd && props.onResizeEnd(calSize() as any)
     }
 
     let resizeBar: React.ReactNode = null
@@ -322,11 +317,8 @@ const Draggable: React.FC<DragProps> = (props) => {
         const box = targetDomRef.current.getBoundingClientRect()
         resizeBar = (
             <ResizeBar 
+                target={targetDomRef.current as HTMLElement}
                 key={2}
-                x={box.x}
-                y={box.y}
-                width={box.width}
-                height={box.height}
                 allowDirections={direction}
                 onResizeStart={handleResizeStart}
                 onResizeEnd={handleResizeEnd}

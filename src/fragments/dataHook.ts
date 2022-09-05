@@ -31,7 +31,7 @@ function useArray<T>(array: T[]){
     }
 
     function remove(filter: Predictor<T>){
-        setItems(items.filter(i => !filter))
+        setItems(items.filter(i => !filter(i)))
     }
 
     function keep(filter: Predictor<T>){
@@ -130,12 +130,23 @@ function useComponents(root: Omit<Component, 'id'|'children'>, handlers: Handler
         op.replace(byId(id), component)
     }
 
-    function merge(id: string, component: Component){
+    function merge(id: string, component: Partial<Component>){
         op.merge(byId(id), component)
     }
 
     function remove(id: string){
-        op.remove(byId(id))
+        const root = find('root')
+        const newChildren = root.children.filter(childId => childId !== id)
+        const newRoot = {...root, children: newChildren}
+        const newComponents = components.map(component => {
+            if(component.id === "root"){
+                return newRoot
+            }
+            return component
+        })
+        .filter(component => component.id !== id)
+        console.info(newComponents)
+        op.set(newComponents)
     }
 
     function find(id: string){
