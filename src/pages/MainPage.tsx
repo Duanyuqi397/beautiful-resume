@@ -177,7 +177,7 @@ export const MainPage = () => {
       const gridLeft = Math.floor(left)
       const gridTop = Math.floor(top)
       const newComponent = addComponent(type, left, top);
-      operation.initConfig(newComponent);
+      const currentConfig = (operation.initConfig(newComponent)) as Component;
       const width = utils.parseNumberFromStyle(currentConfig.props.style.width)
       const height = utils.parseNumberFromStyle(currentConfig.props.style.height)
       align.setPosition(newComponent.id, [gridLeft, gridLeft + width, gridTop, gridTop + height])

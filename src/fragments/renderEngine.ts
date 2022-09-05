@@ -32,7 +32,6 @@ class RenderEngine{
     }
 
     private renderComponent(component: Component, componentsMap: Map<string, Component>): ReactNode{
-        console.info(componentsMap)
         if (component.type === "text") {
             return component.props?.value;
         }
