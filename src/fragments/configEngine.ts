@@ -1,9 +1,6 @@
-import React, { useState } from "react";
-import { Component, ConfigProps } from "../types/types";
+import { Component } from "../types/types";
 
-function useConfig(configs: Record<string, Partial<ConfigProps>>) {
-    const [editableProps, setEditableProps] = useState<Omit<ConfigProps, 'name' | 'component'>>();
-
+function useConfig(configs: Record<string, any>) {
     function isObjectValueEqual(a: any, b: any) {
         let aProps = Object.getOwnPropertyNames(a);
         let bProps = Object.getOwnPropertyNames(b);
@@ -37,71 +34,79 @@ function useConfig(configs: Record<string, Partial<ConfigProps>>) {
         return obj;
     }
 
-    function loop(target: any, source: any) {
-        for (const key in source) {
-            if (typeof source[key] === 'object') {
-                loop(target, source[key]);
-            } else {
-                target[key] = source[key];
-            }
-        }
-        return target;
-    }
-    
-    //for setConfig
-    function mergeProps(a: any, b: any) {
-        const nb = loop({}, b);
-        function visit(obj: any) {
-            for (const key in obj) {
-                if (typeof obj[key] === 'object') {
-                    visit(obj[key]);
-                } else {
-                    if (key in nb) {
-                        obj[key] = nb[key];
-                    }
-                }
-            }
-        }
-        visit(a);
-        return a;
+    function getEditor(type: string) {
+        const editor = Object.values(configs).find(item => item.component === type);
+        return editor
     }
 
     function initConfig(component: Component) {
         //get the current component's editor
         let currentComponentProps = component.props;
         const editorValue = Object.values(configs).filter(item => item.component === component.type);
-        if(!editorValue.length) return;
+        if (!editorValue.length) return component;
         const editor = editorValue[0];
-
-        //save the editable props of currentComponent
-        if (editor.drag) {
-            currentComponentProps.editor = { ...editor.drag.size, ...editor.style };
-        }
 
         //init the component's props with editor
         currentComponentProps = assignProps(currentComponentProps, editor);
-        setEditableProps(currentComponentProps.editor);
         return component;
-    }
-
-    function getConfig(component: Component) {
-        setEditableProps(component.props.editor);
     }
 
     function setConfig(component: Component, newConfig: Object) {
         let currentComponentProps = component.props;
         //don't change editor if newConfig without change
-        if(isObjectValueEqual(currentComponentProps.editor,newConfig)){
-           return; 
+        if (isObjectValueEqual(currentComponentProps.editor, newConfig)) {
+            return;
         }
-        //save current change in editor,
-        //to ensure anytime the getConfig function can get the latest change
-        currentComponentProps.editor = {...newConfig};
-        currentComponentProps = mergeProps(currentComponentProps, currentComponentProps.editor);
-        getConfig(component);
+        currentComponentProps = mergeProps(currentComponentProps, { ...newConfig });
+        return currentComponentProps;
     }
 
-    return [editableProps, { initConfig, getConfig, setConfig }] as const;
+    return { getEditor, initConfig, setConfig, getEditableProps, isObjectValueEqual, mergeProps } as const;
 }
 
-export { useConfig };
+function loop(target: any, source: any) {
+    for (const key in source) {
+        if (typeof source[key] === 'object') {
+            loop(target, source[key]);
+        } else {
+            target[key] = source[key];
+        }
+    }
+    return target;
+}
+
+function getEditableProps(props: any, editor: any) {
+    let res: Record<string, any> = {}
+    function visit(obj: any) {
+        for (const key in obj) {
+            if (typeof obj[key] === 'object') {
+                visit(obj[key]);
+            } else {
+                if (key in editor && key in obj) {
+                    res[key] = obj[key];
+                }
+            }
+        }
+    }
+    visit(props)
+    return res
+}
+
+function mergeProps(a: any, b: any) {
+    const nb = loop({}, b);
+    function visit(obj: any) {
+        for (const key in obj) {
+            if (typeof obj[key] === 'object') {
+                visit(obj[key]);
+            } else {
+                if (key in nb) {
+                    obj[key] = nb[key];
+                }
+            }
+        }
+    }
+    visit(a);
+    return a;
+}
+
+export { useConfig, getEditableProps, mergeProps };
