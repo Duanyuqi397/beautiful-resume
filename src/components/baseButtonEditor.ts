@@ -1,25 +1,16 @@
 const baseButtonEditor = {
     name:'baseButtonEditor',
     component: 'BaseButton',
-    position: {
-        x: {
-            toEditor: "", 
-            toProp: "",
-            name: "x",
-            type: "number",
-            default: 0,
-        },
-        y: {
-            toEditor: "", 
-            toProp: "",
-            name: "y",
-            type: "number",
-            default: 0,
+    drag: {
+        size: {
+            width: 400,
+            height: 400
         }
     },
     style: {
         width: '150px',
-        height: '50px'
+        height: '50px',
+        borderRadius: '10px'
     }
 }
 
