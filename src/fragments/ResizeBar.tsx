@@ -6,70 +6,106 @@ import * as ReactDOM from 'react-dom'
 const RESIZE_BALL_SIZE = 9
 
 const RESIZE_BAR_BASE_STYLE: CSSProperties = {
-    position: 'fixed',
+    position: 'absolute',
     borderRadius: '50%',
     backgroundColor: 'rgb(41, 182, 242)'
 }
 
 type ResizeBarProps = {
-    x: number,
-    y: number,
-    width: number,
-    height: number,
+    target: HTMLElement,
     ballSize?: number,
     onResizeStart?: (e: MouseEvent, direction: Direction) => void,
     onResizeEnd?: (e: MouseEvent, direction: Direction) => void,
-    allowDirections?: Direction[]|undefined,
+    allowDirections?: Direction[]|undefined
 }
 
 type Direction = "up"|"down"|"left"|"right"|"up-left"|"up-right"|"down-left"|"down-right"
 
 type BAR_PROPS = {
-    "direction": Direction,
-    "style": React.CSSProperties,
-    "positionFunction": (props: {size: number, x: number, y: number, width: number, height: number}) => [number, number]
+    direction: Direction,
+    callStyle: (props: {size: number, width: number, height: number}) => CSSProperties
 }
 
 const RESIZE_BAR_PROPS: BAR_PROPS[] = [
     {
         "direction": "up",
-        "style": {...RESIZE_BAR_BASE_STYLE, 'cursor':'n-resize'},
-        'positionFunction': props => [props.x + (props.width - props.size) / 2, props.y - props.size / 2]
+        'callStyle': props => (
+            {
+                top: -props.size / 2,
+                left: (props.width - props.size) / 2,
+                'cursor':'n-resize'
+            }
+        )
     },
     {
         "direction": "down",
-        "style": {...RESIZE_BAR_BASE_STYLE, 'cursor':'s-resize'},
-        'positionFunction': props => [props.x + (props.width - props.size) / 2, props.y + props.height - props.size / 2 ]
+        'callStyle': props => (
+            {
+                bottom: -props.size / 2,
+                left: (props.width - props.size) / 2,
+                'cursor':'s-resize'
+            }
+        )
     },
     {
         "direction": "left",
-        "style": {...RESIZE_BAR_BASE_STYLE,'cursor':'w-resize'},
-        'positionFunction': props => [props.x - props.size / 2, props.y + (props.height - props.size) / 2]
+        'callStyle': props => (
+            {
+                top: (props.height - props.size) / 2,
+                left: -props.size / 2,
+                'cursor':'w-resize'
+            }
+        )
     },
     {
         "direction": "right",
-        "style": {...RESIZE_BAR_BASE_STYLE, 'cursor':'e-resize'},
-        'positionFunction': props => [props.x + props.width - props.size / 2, props.y + (props.height - props.size) / 2]
+        'callStyle': props => (
+            {
+                bottom: (props.height - props.size) / 2,
+                right: -props.size / 2,
+                'cursor':'e-resize'
+            }
+        )
     },
     {
         "direction": "up-left",
-        "style": {...RESIZE_BAR_BASE_STYLE, 'cursor':'nw-resize'},
-        'positionFunction': props => [props.x - props.size / 2, props.y  - props.size / 2]
+        'callStyle': props => (
+            {
+                left: -props.size / 2,
+                top: -props.size / 2,
+                'cursor': 'nw-resize'
+            }
+        )
     },
     {
         "direction": "up-right",
-        "style": {...RESIZE_BAR_BASE_STYLE, 'cursor':'ne-resize'},
-        'positionFunction': props => [props.x + props.width - props.size / 2, props.y  - props.size / 2]
+        'callStyle': props => (
+            {
+                right: -props.size / 2,
+                top: -props.size / 2,
+                'cursor':'ne-resize'
+            }
+        )
     },
     {
         "direction": "down-left",
-        "style": {...RESIZE_BAR_BASE_STYLE, 'cursor':'sw-resize'},
-        'positionFunction': props => [props.x - props.size / 2, props.y + props.height  - props.size / 2]
+        'callStyle': props => (
+            {
+                left: -props.size / 2,
+                bottom: -props.size / 2,
+                'cursor':'sw-resize'
+            }
+        )
     },
     {
         "direction": "down-right",
-        "style": {...RESIZE_BAR_BASE_STYLE, 'cursor':'se-resize'},
-        'positionFunction': props => [props.x + props.width - props.size / 2, props.y + props.height  - props.size / 2] 
+        'callStyle': props => (
+            {
+                right: -props.size / 2,
+                bottom: -props.size / 2,
+                'cursor':'se-resize'
+            }
+        )
     }
 ]
 
@@ -90,25 +126,26 @@ const ResizeBar: React.FC<ResizeBarProps> = (props) => {
         ballSize=RESIZE_BALL_SIZE,
         onResizeStart=()=>{},
         onResizeEnd=()=>{},
-        allowDirections=ALL_DIRECTIONS
+        allowDirections=ALL_DIRECTIONS,
+        target
     } = props
+    const {width, height} = target.getBoundingClientRect()
     const ResizeBar = (
-       <div>
+       <>
             {
                 RESIZE_BAR_PROPS.map(prop => {
-                    const [left, top] = prop.positionFunction({...props, size: ballSize})
+                    const otherStyle = prop.callStyle({width, height, size: ballSize})
                     return (
                         <div
+                            key={prop.direction}
                             id={prop.direction}
                             draggable="false"
                             onDragStart={e => e.preventDefault()}
                             style={{
-                                ...prop.style,
-                                left,
-                                top,
+                                ...RESIZE_BAR_BASE_STYLE,
+                                ...otherStyle,
                                 width: ballSize,
                                 height: ballSize,
-                                zIndex: 100,
                                 visibility: allowDirections.includes(prop.direction) ? 'visible': 'hidden'
                             }}
                             onMouseDown={(e) => {
@@ -123,20 +160,9 @@ const ResizeBar: React.FC<ResizeBarProps> = (props) => {
                     )
                 })
             }
-            {/* <div
-                style={{
-                        width,
-                        height,
-                        position: 'fixed',
-                        left: x,
-                        top: y,
-                        zIndex: 99,
-                        border: '1px dashed rgb(41, 182, 242)'
-                }}
-            /> */}
-       </div>
+       </>
     )
-    return ReactDOM.createPortal(ResizeBar, document.getElementById("root") as Element)
+    return ReactDOM.createPortal(ResizeBar, props.target)
 }
 
 export default ResizeBar

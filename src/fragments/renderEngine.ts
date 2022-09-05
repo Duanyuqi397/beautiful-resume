@@ -32,6 +32,7 @@ class RenderEngine{
     }
 
     private renderComponent(component: Component, componentsMap: Map<string, Component>): ReactNode{
+        console.info(componentsMap)
         if (component.type === "text") {
             return component.props?.value;
         }
@@ -46,6 +47,9 @@ class RenderEngine{
     }
 
     render(componentsMap: Map<string, Component>): ReactNode{
+        if(!componentsMap.has("root")){
+            throw new Error('root component not found!')
+        }
         return this.renderComponent(componentsMap.get("root") as Component, componentsMap)
     }
 }

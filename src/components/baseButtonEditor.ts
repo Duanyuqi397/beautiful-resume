@@ -8,7 +8,9 @@ const baseButtonEditor = {
         }
     },
     style: {
-        borderRadius: '10px',
+        width: '150px',
+        height: '50px',
+        borderRadius: '10px'
     }
 }
 

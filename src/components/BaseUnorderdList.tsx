@@ -2,7 +2,7 @@ import { Input } from "antd";
 import { useState } from "react";
 import { Cprops } from "../types/types";
 
-const BaseUnorderedList: React.FC = (props:Cprops) => {
+const BaseUnorderedList: React.FC<Cprops> = (props:Cprops) => {
     const [list,setList] = useState<String[]>(['123']);
     const [content,setContent] = useState('');
     return (
