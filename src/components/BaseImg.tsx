@@ -44,4 +44,12 @@ const getBase64 = (img: RcFile, callback: (url: string) => void) => {
 
 const UploadButton = () => <Button>选择图片</Button>;
 
+BaseImg.defaultProps = {
+  style: {
+    width: 150,
+    height: 50,
+    boxShadow: '0px 5px 10px 3px #DEDEDE'   
+  }
+}
+
 export default BaseImg;

@@ -1,43 +1,65 @@
 import { Button, Form, Input, Row } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { useEffect } from "react";
-import { Cprops } from "../types/types";
+import { Component, Cprops, EditorType } from "../types/types";
 import { getEditableProps, mergeProps } from "./configEngine";
+import RichText from "./RichText";
+import InputEditor from "./InputEditor";
+import { EDITORS } from "../scripts/constants";
+import * as utils from "../scripts/utils"
+import * as React from 'react'
 
-function ConfigPanel(props: {updateFn: any, componentProps: Cprops, currentEditor: Record<string, any>}) {
-  const { updateFn, componentProps, currentEditor } = props;
-  const editableConfig = getEditableProps(componentProps,{...currentEditor.style});
-  const keys = Object.keys(editableConfig);
+const editorMapping = {
+  [EDITORS.input]: InputEditor,
+  [EDITORS.richText]: RichText
+}
+
+function ConfigPanel(props: {updateFn: any, component: Component, currentEditor: Record<string, any>}) {
+  const { updateFn, component, currentEditor } = props;
+  const componentProps = component.props
   const [form] = useForm();
-
-  useEffect(() => {
-    form.setFieldsValue(editableConfig);
-  },[componentProps])
-
-  const onFinish = () => {
-    form.validateFields().then((value) => {
-      updateFn(mergeProps(componentProps,value));
-    });
-  };
 
   const onReset = () => {
     form.resetFields()
   }
 
+  useEffect(() => {
+   form.resetFields()
+   form.setFieldsValue(componentProps)
+  }, [component.id])
+
+  const submit = utils.debounce(form.submit, 300)
+
+  const flaternConfigs = utils.flatConfigs(currentEditor)
   return (
-    <Form name="config-panel" form={form} onFinish={onFinish}>
-      {keys.map((item) => (
-        <Form.Item
-          initialValue={editableConfig[item]}
-          label={item}
-          key={item}
-          name={item}
-          rules={[{ required: true, message: 'It is cannot be null!' }]}
-        >
-          <Input />
-        </Form.Item>
-      ))}
-      {keys.length !== 0 && (
+    <Form 
+      name="config-panel" 
+      form={form} 
+      initialValues={componentProps}
+      onFinish={(values) => {
+        const newValues = utils.merge(component.props, values)
+        updateFn(newValues)
+      }}
+      onFinishFailed={(err) => console.info('validate error', err)}
+      onValuesChange={submit}    
+    >
+      {
+       flaternConfigs
+          .map((item) => (
+              <Form.Item
+                shouldUpdate={(prevValues, curValues) => prevValues !== curValues}
+                label={item.config.name}
+                key={item.path.join("-")}
+                name={item.path}
+                rules={item.config.validateRules}
+              >
+                {
+                  React.createElement(editorMapping[item.config.type] as any, item.config.otherProps)
+                }
+              </Form.Item>
+          ))
+      }
+      {/* {keys.length !== 0 && (
         <div>
           <Row justify="space-between" align="middle" style={{padding: '0 40px'}} >
             <Form.Item>
@@ -48,7 +70,7 @@ function ConfigPanel(props: {updateFn: any, componentProps: Cprops, currentEdito
             </Form.Item>
           </Row>
         </div>
-      )}
+      )} */}
     </Form>
   );
 }
