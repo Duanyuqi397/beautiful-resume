@@ -1,6 +1,7 @@
 import { CSSProperties, DOMAttributes } from "react";
 import { DragDataProps } from "../fragments/Draggable";
 import {Rule} from "antd/lib/form"
+import { type } from "os";
 
 export type Component = {
     id: string;
@@ -45,7 +46,7 @@ type Predictor<T> = (item: T) => boolean
 
 export type TypeFuncMaping = Record<string, React.FC<ComponentProps>>
 
-type EditorType = "Input"|"ColorPicker"|"RichText"
+type EditorType = "Input"|"ColorPicker"|"RichText"|"Select"
 
 // type EditorProps = {
 //     name: string,
@@ -55,14 +56,17 @@ type EditorType = "Input"|"ColorPicker"|"RichText"
 //     args?: Record<string, any>
 // }
 
+type EditorConstructorType = {
+    name: string, 
+    type: EditorType,
+    group?: string, 
+    validateRules?: Rule[], 
+    otherProps?: Record<string, any>,
+    defaultValue?: any
+}
+
 class EditorProps{
-    constructor(public props: {
-         name: string, 
-         type: EditorType,
-         group?: string, 
-         validateRules?: Rule[], 
-         otherProps?: Record<string, any>
-    }){}
+    constructor(public props: EditorConstructorType){}
 
     public get name(): string{
         return this.props.name
@@ -84,13 +88,11 @@ class EditorProps{
         return this.props.otherProps
     }
 
-    static fromObject(props: {
-        name: string, 
-        type: EditorType,
-        group?: string, 
-        validateRules?: Rule[], 
-        otherProps?: Record<string, any>
-   }){
+    public get defaultValue(): any | undefined{
+        return this.props.defaultValue
+    }
+
+    static fromObject(props: EditorConstructorType){
     return new EditorProps(props)
    }
 }
@@ -99,6 +101,12 @@ type Editor = {
     name: string,
     component: string,
     config: any
+}
+
+type BaseEditorProps<T = any> = {
+    value: T | undefined,
+    onChange: (arg: T) => void,
+    [others: string]: any
 }
 
 export {
@@ -113,4 +121,5 @@ export type {
     ConfigProps, 
     EditorType, 
     Editor,
+    BaseEditorProps
 }

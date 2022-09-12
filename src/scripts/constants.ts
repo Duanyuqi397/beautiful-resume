@@ -1,9 +1,11 @@
 import { EditorType, EditorProps } from "../types/types";
 import {Rule} from "antd/lib/form"
+import { CSSProperties } from "react";
 
 const EDITORS = {
      input: "Input" as EditorType,
-     richText: "RichText" as EditorType
+     richText: "RichText" as EditorType,
+     select: "Select" as EditorType
 }
 
 const Validtors = {
@@ -34,18 +36,50 @@ const FIELDS: Record<string, EditorProps> = {
         name: "填充",
         type: EDITORS.input,
     }),
-    border: EditorProps.fromObject({
-        name: "线条",
+    borderWidth: EditorProps.fromObject({
+        name: "线条宽度",
         type: EDITORS.input,
+        defaultValue: 0,
+        otherProps: {
+           addonAfter: "px",
+           isNumber: true,
+           min: 0
+        }
+    }),
+    borderStyle: EditorProps.fromObject({
+        name: "线型",
+        type: EDITORS.select,
+        defaultValue: "none",
+        otherProps: {
+            options: [
+                {
+                    name: "无线条",
+                    value: "none"
+                },
+                {
+                    name: "虚线",
+                    value: "dashed"
+                },
+                {
+                    name: "实线",
+                    value: "solid"
+                }
+            ]
+        }
     })
 }
 
-const BASE_EDITOR_CONFIG = {
+const BASE_EDITOR_CONFIG: {
+    style: {
+        [P in keyof CSSProperties]: EditorProps
+    }
+} = {
     style: {
         width: FIELDS.width,
         height: FIELDS.height,
         backgroundColor: FIELDS.backgroundColor,
-        border: FIELDS.border,
+        borderWidth: FIELDS.borderWidth,
+        borderStyle: FIELDS.borderStyle
     }
 }
 

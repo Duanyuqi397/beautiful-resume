@@ -5,13 +5,15 @@ import { Component, Cprops, EditorType } from "../types/types";
 import { getEditableProps, mergeProps } from "./configEngine";
 import RichText from "./RichText";
 import InputEditor from "./InputEditor";
+import SelectEditor from "./SelectEditor";
 import { EDITORS } from "../scripts/constants";
 import * as utils from "../scripts/utils"
 import * as React from 'react'
 
 const editorMapping = {
   [EDITORS.input]: InputEditor,
-  [EDITORS.richText]: RichText
+  [EDITORS.richText]: RichText,
+  [EDITORS.select]: SelectEditor
 }
 
 function ConfigPanel(props: {updateFn: any, component: Component, currentEditor: Record<string, any>}) {
@@ -24,9 +26,9 @@ function ConfigPanel(props: {updateFn: any, component: Component, currentEditor:
   }
 
   useEffect(() => {
-   form.resetFields()
-   form.setFieldsValue(componentProps)
-  }, [component.id])
+    form.resetFields()
+    form.setFieldsValue(componentProps)
+  }, [component.id, component.props.style.width, component.props.style.height])
 
   const submit = utils.debounce(form.submit, 300)
 
@@ -38,6 +40,7 @@ function ConfigPanel(props: {updateFn: any, component: Component, currentEditor:
       initialValues={componentProps}
       onFinish={(values) => {
         const newValues = utils.merge(component.props, values)
+        console.info(newValues)
         updateFn(newValues)
       }}
       onFinishFailed={(err) => console.info('validate error', err)}
@@ -52,6 +55,7 @@ function ConfigPanel(props: {updateFn: any, component: Component, currentEditor:
                 key={item.path.join("-")}
                 name={item.path}
                 rules={item.config.validateRules}
+                initialValue={item.config.defaultValue}
               >
                 {
                   React.createElement(editorMapping[item.config.type] as any, item.config.otherProps)

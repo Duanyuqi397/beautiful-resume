@@ -45,10 +45,10 @@ function merge(t: any, source: any): any {
                 const targetValue = target[key] as any
                 const sourceType = typeof sourceValue
                 const targetType = typeof targetValue
-                if(targetType !== 'undefined' && sourceType !== targetType){
+                if(sourceType !== targetType && targetType === 'object' && sourceValue && targetValue){
                     throw new Error('schema not match')
                 }
-                if (key in target && targetType === 'object'){
+                if ((key in target) && targetType === 'object' && targetValue !== null){
                     return [key, merge(targetValue, sourceValue)]
                 }else{
                     return [key, sourceValue]
@@ -72,10 +72,25 @@ function debounce<T extends Function>(func: T, debounceMs: number): T{
     return wrapper as any as T
 }
 
+// function parseBorder(border: undefined): undefined
+// function parseBorder(border: string): {width: string, style: string, color: string}
+function parseBorder(border: string|undefined){
+    if(typeof border === 'string'){
+        const parts = border.split(" ")
+        return {
+            width: parts[0],
+            style: parts[1],
+            color: parts.slice(2).join(" ")
+        }
+    }
+    return undefined
+}
+
 export {
     parseNumberFromStyle,
     removeKeys,
     merge,
     flatConfigs,
-    debounce
+    debounce,
+    parseBorder
 }

@@ -260,7 +260,9 @@ export const MainPage = () => {
                   <ConfigPanel
                     currentEditor={operation.getEditor(op.find(activeId).type).config}
                     component={op.find(activeId)}
-                    updateFn={(newProps: any) => op.mergeProps(activeId, newProps)}
+                    updateFn={(newProps: any) => {
+                      op.mergeProps(activeId, newProps)
+                    }}
                   />
                 )}
               </div>
