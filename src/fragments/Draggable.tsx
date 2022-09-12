@@ -238,6 +238,11 @@ const Draggable: React.FC<DragProps> = (props) => {
     }
 
     function handleShowResizeBar(e: MouseEvent){
+        if(showResizeBar){
+            onClick && onClick(e)
+            setShowResizeBar(false)
+            return
+        }
         const target = e.currentTarget as HTMLElement
         if(!target){
             throw Error('dom not got mounted when click')            
