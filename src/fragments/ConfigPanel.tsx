@@ -7,6 +7,8 @@ import RichText from "./RichText";
 import InputEditor from "./InputEditor";
 import SelectEditor from "./SelectEditor";
 import ImageEditor from "./ImageEditor";
+import PositionEditor from "./PositionEditor";
+import ColorPicker from "./ColorPicker";
 import { EDITORS } from "../scripts/constants";
 import * as utils from "../scripts/utils"
 import { ConfigPath } from "../scripts/utils";
@@ -16,7 +18,9 @@ const editorMapping = {
   [EDITORS.input]: InputEditor,
   [EDITORS.richText]: RichText,
   [EDITORS.select]: SelectEditor,
-  [EDITORS.uploader]: ImageEditor
+  [EDITORS.uploader]: ImageEditor,
+  [EDITORS.position]: PositionEditor,
+  [EDITORS.colorPicker]: ColorPicker
 }
 
 function getEachItem(item: ConfigPath){
@@ -47,6 +51,16 @@ const formItemLayout = {
   wrapperCol: { span: 16, offset: 1},
 }
 
+function useDebounceEffect(func: Function, deps: any[], debounceMs: number=300){
+  const timerRef = React.useRef<any>(null)
+  useEffect(() => {
+    if(timerRef.current){
+      clearTimeout(timerRef.current)
+    }
+    timerRef.current = setTimeout(func, debounceMs)
+  }, deps)
+}
+
 function ConfigPanel(props: {updateFn: any, component: Component, currentEditor: Record<string, any>}) {
   const { updateFn, component, currentEditor } = props;
   const componentProps = component.props
@@ -56,11 +70,22 @@ function ConfigPanel(props: {updateFn: any, component: Component, currentEditor:
     form.resetFields()
   }
 
+  const outsizeProps = [
+      component.props.style.width, 
+      component.props.style.height,
+      component.props.drag?.position?.[0],
+      component.props.drag?.position?.[1]
+    ]
+
   useEffect(() => {
     form.resetFields()
     form.setFieldsValue(componentProps)
-  }, [component.id, component.props.style.width, component.props.style.height])
-  //}, [component.id])
+  }, [component.id])
+
+  useDebounceEffect(() => {
+    form.resetFields()
+    form.setFieldsValue(componentProps)
+  }, outsizeProps)
 
   const submit = utils.debounce(form.submit, 300)
 
@@ -79,7 +104,13 @@ function ConfigPanel(props: {updateFn: any, component: Component, currentEditor:
         updateFn(newValues)
       }}
       onFinishFailed={(err) => console.info('validate error', err)}
-      onValuesChange={submit}    
+      onValuesChange={(e) => {
+        if(e.drag?.position){
+          form.submit()
+        }else{
+          submit()
+        }
+      }}    
     >
       {
         configItems

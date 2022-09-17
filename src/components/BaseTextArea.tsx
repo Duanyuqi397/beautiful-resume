@@ -28,7 +28,8 @@ const  BaseTextArea: React.FC<any> = (props) => {
             style={{...props.style, backgroundColor}}
         >
             <div
-                style={{width: "100%", height: "100%"}}
+                draggable={false}
+                style={{width: "100%", height: "100%", userSelect: "none"}}
                 dangerouslySetInnerHTML={{__html: props.content.html}} 
             >
             </div>

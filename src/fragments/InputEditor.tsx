@@ -1,4 +1,4 @@
-import { Input, InputNumber } from "antd";
+import { Button, Input, InputNumber } from "antd";
 import { BaseEditorProps } from '../types/types'
 
 type ReturnType = "string" | "number"

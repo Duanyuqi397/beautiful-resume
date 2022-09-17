@@ -216,6 +216,7 @@ const Draggable: React.FC<DragProps> = (props) => {
     }
 
     function onMouseDownWrapper(e: MouseEvent){
+        
         onMouseDown && onMouseDown(e)
         if(shouldCancle(e) || moving()){
             return

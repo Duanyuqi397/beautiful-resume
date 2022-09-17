@@ -49,7 +49,7 @@ function merge(t: any, source: any): any {
                 if(sourceType !== targetType && targetType === 'object' && sourceValue && targetValue){
                     throw new Error('schema not match')
                 }
-                if ((key in target) && targetType === 'object' && targetValue !== null){
+                if ((key in target) && targetType === 'object' && targetValue !== null && !Array.isArray(targetValue)){
                     return [key, merge(targetValue, sourceValue)]
                 }else{
                     return [key, sourceValue]

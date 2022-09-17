@@ -6,7 +6,9 @@ const EDITORS = {
      input: "Input" as EditorType,
      richText: "RichText" as EditorType,
      select: "Select" as EditorType,
-     uploader: "Uploader" as EditorType
+     uploader: "Uploader" as EditorType,
+     position: "position" as EditorType,
+     colorPicker: "colorPicker" as EditorType
 }
 
 const Validtors = {
@@ -38,7 +40,7 @@ const FIELDS = {
     backgroundColor: EditorProps.fromObject({
         name: "填充",
         group: "背景",
-        type: EDITORS.input,
+        type: EDITORS.colorPicker,
     }),
     borderWidth: EditorProps.fromObject({
         name: "线条宽度",
@@ -77,6 +79,11 @@ const FIELDS = {
             ]
         }
     }),
+    borderRadius: EditorProps.fromObject({
+        name: "圆角",
+        type: EDITORS.input,
+        group: "样式"
+    }),
     zIndex: EditorProps.fromObject({
         name: "层级",
         type: EDITORS.input,
@@ -97,15 +104,26 @@ const FIELDS = {
 const BASE_EDITOR_CONFIG: {
     style: {
         [P in keyof CSSProperties]: EditorProps
+    },
+    drag: {
+        position: EditorProps
     }
 } = {
     style: {
+        borderRadius: FIELDS.borderRadius,
+        zIndex: FIELDS.zIndex,
         width: FIELDS.width,
         height: FIELDS.height,
         backgroundColor: FIELDS.backgroundColor,
         borderWidth: FIELDS.borderWidth,
-        borderStyle: FIELDS.borderStyle,
-        zIndex: FIELDS.zIndex
+        borderStyle: FIELDS.borderStyle, 
+    },
+    drag: {
+        position: EditorProps.fromObject({
+            name: "位置",
+            group: "位置",
+            type: EDITORS.position
+        })
     }
 }
 

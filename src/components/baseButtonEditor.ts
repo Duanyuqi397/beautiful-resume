@@ -1,10 +1,8 @@
 import { Editor, EditorProps } from "../types/types";
 import { BASE_EDITOR_CONFIG, EDITORS } from "../scripts/constants"
 
- 
-
-export default {
-    name:'baseTextArea',
+const editor: Editor = {
+    name:'baseContainer',
     component: 'BaseTextArea',
     config: {
         ...BASE_EDITOR_CONFIG,
@@ -14,3 +12,5 @@ export default {
         })
     }
 }
+
+export default editor;
