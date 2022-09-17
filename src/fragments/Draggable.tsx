@@ -31,7 +31,8 @@ type DragDataProps = {
     ratio?: number,
     style?: React.CSSProperties,
     minRize?: Size,
-    canResize?: boolean
+    canResize?: boolean,
+    allowResizeDirection?: Direction[]
 }
 type Limit = [number, number, number, number]
 
@@ -129,7 +130,8 @@ const Draggable: React.FC<DragProps> = (props) => {
     const sizeLimitRef = React.useRef<Limit>()
 
     const {
-        defaultSize
+        defaultSize,
+        allowResizeDirection,
     } = props
     
     const initWidth = utils.parseNumberFromStyle(style.width) || defaultSize?.width 
@@ -214,6 +216,7 @@ const Draggable: React.FC<DragProps> = (props) => {
     }
 
     function onMouseDownWrapper(e: MouseEvent){
+        
         onMouseDown && onMouseDown(e)
         if(shouldCancle(e) || moving()){
             return
@@ -238,6 +241,11 @@ const Draggable: React.FC<DragProps> = (props) => {
     }
 
     function handleShowResizeBar(e: MouseEvent){
+        if(showResizeBar){
+            onClick && onClick(e)
+            setShowResizeBar(false)
+            return
+        }
         const target = e.currentTarget as HTMLElement
         if(!target){
             throw Error('dom not got mounted when click')            
@@ -251,6 +259,15 @@ const Draggable: React.FC<DragProps> = (props) => {
         if(!blurByResizeRef.current){
             setShowResizeBar(false)
         }
+    }
+
+    function getAllowDirection(){
+        if(direction){
+            return direction
+        }else if(allowResizeDirection){
+            return allowResizeDirection
+        }
+        return undefined
     }
 
     function hadleResize(offset: Position, e: MouseEvent){
@@ -319,7 +336,7 @@ const Draggable: React.FC<DragProps> = (props) => {
             <ResizeBar 
                 target={targetDomRef.current as HTMLElement}
                 key={2}
-                allowDirections={direction}
+                allowDirections={getAllowDirection()}
                 onResizeStart={handleResizeStart}
                 onResizeEnd={handleResizeEnd}
             />

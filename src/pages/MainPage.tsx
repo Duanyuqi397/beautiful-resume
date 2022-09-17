@@ -1,11 +1,11 @@
 import { Row, Col } from "antd";
 import "./MainPage.css";
 import importComponents from "../scripts/importComponents";
-import { Component } from "../types/types";
+import { Component, Cprops } from "../types/types";
 import { RenderEngine } from "../fragments/renderEngine";
 import ConfigPanel from "../fragments/ConfigPanel";
 import { useComponents, useMap } from "../fragments/dataHook";
-import {
+import React, {
   useState,
   useLayoutEffect,
   useRef,
@@ -26,7 +26,7 @@ import dictionary from "../assets/others/dictionary.svg";
 import config from "../assets/others/config.svg";
 
 //引入components下的组件
-const components: Record<string, any> = importComponents(
+const components: Record<string, React.FC<any>> = importComponents(
   require.context("../components/", false, /[^.]+\.tsx/)
 );
 
@@ -50,6 +50,7 @@ const mapNames: Record<string, string> = {
   BaseInput: "输入框",
   BaseImg: "图片",
   BaseTextArea: "文本编辑",
+  BaseContainer: "容器"
 };
 
 const render = new RenderEngine(components);
@@ -90,7 +91,7 @@ function offsetSet(container: HTMLElement, element: HTMLElement) {
 
 export const MainPage = () => {
   const operation = configEngine(configs);
-  const [activeId, setActiveId] = useState<string>("");
+  const [activeId, setActiveId] = useState<string|null>(null);
   const position = useMap<number, [number, number]>(new Map());
   const containerRef = useRef<HTMLElement | null>(null);
   const nameRef = useRef<Map<number, HTMLElement | null>>(new Map());
@@ -108,23 +109,11 @@ export const MainPage = () => {
       onPositionChange: useEvent((id, position) => {
         op.mergePropsTo("drag", id, { position: position as any });
         const component = op.find(id);
-
-        const left = (component.props.style?.left || 0) as number;
-        const top = (component.props.style?.top || 0) as number;
-
         const size = {
-          width: component.props.style.width,
-          height: component.props.style.height,
-        };
-
-        const [transateX, tarnsateY] = position as any;
-
-        const absLeft = left + transateX;
-        const absTop = top + tarnsateY;
-        const absRight = absLeft + utils.parseNumberFromStyle(size.width);
-        const absBottom = absTop + utils.parseNumberFromStyle(size.height);
-
-        align.calAlign(id, [absLeft, absRight, absTop, absBottom]);
+          width: utils.parseNumberFromStyle(component.props.style.width),
+          height: utils.parseNumberFromStyle(component.props.style.height)
+        }
+        align.calAlign(component.id, position as any, size);
       }),
 
       onSizeChange: useEvent((id, size) => {
@@ -138,18 +127,24 @@ export const MainPage = () => {
       onResizeEnd: useEvent((id, size) => {
         align.resetAlign();
       }),
-    },
+    }
   });
 
   useEffect(() => {
     function deleteComponent(e: KeyboardEvent){
-      const target = e.target as HTMLElement
-      if(e.code === 'Backspace' && target.nodeName === "BODY"){
-        if(activeId){
-          op.remove(activeId)
-          align.removeAlign(activeId)
+      if(e.code === "Backspace"){
+        const target = e.target as HTMLElement
+        if(target.contentEditable === "true" 
+            || target.nodeName === "INPUT"
+            || (!activeId)
+          ){
+          return
         }
-      }}
+        setActiveId(null)
+        op.remove(activeId)
+        align.removeAlign(activeId)
+      }
+    }
     document.addEventListener("keydown", deleteComponent);
     return () => document.removeEventListener("keydown", deleteComponent);
   }, [op, activeId]);
@@ -160,16 +155,21 @@ export const MainPage = () => {
   }, []);
 
   function addComponent(type: string, left: number, top: number) {
-    const component = op.add(type, {
+    const initProps: Cprops = {
       style: {left: 0, top: 0, position: "absolute", width: 0, height: 0},
       drag: {
-        // bound: 'parent',
         canResize: true,
         canDrag: true,
         position: [left, top],
-        disableArea: 10
+        disableArea: 0
       }
-    })
+    }
+    const render = components[type]
+    if(!render){
+      throw new Error('can find render with type: ' + type)
+    }
+    const props = utils.merge(initProps, render.defaultProps ?? {})
+    const component = op.add(type, props)
     return component;
   }
 
@@ -185,10 +185,9 @@ export const MainPage = () => {
       const gridLeft = Math.floor(left)
       const gridTop = Math.floor(top)
       const newComponent = addComponent(type, gridLeft, gridTop);
-      const currentConfig = (operation.initConfig(newComponent)) as Component;
       setActiveId(newComponent.id);
-      const width = utils.parseNumberFromStyle(currentConfig.props.style.width)
-      const height = utils.parseNumberFromStyle(currentConfig.props.style.height)
+      const width = utils.parseNumberFromStyle(newComponent.props.style.width)
+      const height = utils.parseNumberFromStyle(newComponent.props.style.height)
       align.setPosition(newComponent.id, [gridLeft, gridLeft + width, gridTop, gridTop + height])
     }
     position.set(index, [0, 0]);
@@ -249,9 +248,22 @@ export const MainPage = () => {
               <div className="config">
                 {activeId && (
                   <ConfigPanel
-                    currentEditor={operation.getEditor(op.find(activeId).type)}
-                    componentProps={op.find(activeId).props}
-                    updateFn={(newProps: any) => op.mergeProps(activeId, newProps)}
+                    currentEditor={operation.getEditor(op.find(activeId).type).config}
+                    component={op.find(activeId)}
+                    updateFn={(newProps: any) => {
+                      const component = op.find(activeId)
+                      const [oldX, oldY] = component.props.drag?.position || [NaN, NaN]
+                      const [newX, newY] = newProps.drag.position || [NaN, NaN]
+
+                      if(oldX !== newX || oldY !== newY){
+                        const size = {
+                          width: utils.parseNumberFromStyle(component.props.style.width),
+                          height: utils.parseNumberFromStyle(component.props.style.height)
+                        }
+                        align.calAlign(activeId, [newX, newY], size)
+                      }
+                      op.mergeProps(activeId, newProps)
+                    }}
                   />
                 )}
               </div>

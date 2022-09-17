@@ -1,6 +1,8 @@
 import * as React from 'react'
+import { Component } from '../types/types'
 import {AuxiliaryLineProps} from './AuxiliaryLine'
 import {useArray} from './dataHook'
+import { parseNumberFromStyle } from '../scripts/utils'
 
 type ComponentBox = [number, number, number, number]
 
@@ -17,10 +19,17 @@ function useAlign(initPosition?: ComponentBox) {
         componentPositions.current.set(componetId, activeComponentPosition)
     }
 
-    function calAlign(componetId: string, activeComponentPosition: ComponentBox) {
-        const [absLeft, absRight, absTop, absButtom] = activeComponentPosition
+    function calAlign(componentId: string, position: [number, number], size: {width: number, height: number}) {
+        
+        const [transateX, tarnsateY] = position as any;
+
+        const absLeft = transateX;
+        const absTop = tarnsateY;
+        const absRight = absLeft + parseNumberFromStyle(size.width);
+        const absBottom = absTop + parseNumberFromStyle(size.height);
+
         const alignXCenter = absLeft + Math.floor((absRight - absLeft) / 2)
-        const alignYCenter = absTop + Math.floor((absButtom - absTop) / 2)
+        const alignYCenter = absTop + Math.floor((absBottom - absTop) / 2)
 
         const aligns: AuxiliaryLineProps[] = []
         for (const otherId of componentPositions.current.keys()) {
@@ -29,7 +38,7 @@ function useAlign(initPosition?: ComponentBox) {
             const xCenter = calGridMiddle(left, right)
             const yCenter = calGridMiddle(top, bottom)
             
-            if (otherId === componetId) {
+            if (otherId === componentId) {
                 continue
             }
             if (aligns.length >= 6) {
@@ -46,11 +55,11 @@ function useAlign(initPosition?: ComponentBox) {
                 aligns.push({axis: "x", offset: xCenter})
             }  
             
-            if(absTop === top || absButtom === bottom){
+            if(absTop === top || absBottom === bottom){
                 if (absTop === top) {
                     aligns.push({axis: "y", offset: top})
                 }  
-                if (absButtom === bottom) {
+                if (absBottom === bottom) {
                     aligns.push({axis: "y", offset: bottom})
                 }
             }else if (alignYCenter === yCenter) {
@@ -58,7 +67,7 @@ function useAlign(initPosition?: ComponentBox) {
             }   
         }
         setAlignPositions(aligns)
-        setPosition(componetId, [absLeft, absRight, absTop, absButtom])
+        setPosition(componentId, [absLeft, absRight, absTop, absBottom])
     }
 
     function resetAlign(){

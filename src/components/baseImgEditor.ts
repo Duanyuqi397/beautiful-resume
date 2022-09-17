@@ -1,14 +1,15 @@
+import { BASE_EDITOR_CONFIG, EDITORS } from "../scripts/constants"
+import { EditorProps } from "../types/types"
+
 const baseImgEditor = {
     name:'baseImgEditor',
     component: 'BaseImg',
-    drag: {
-        size: {
-            width: 400,
-            height: 400
-        }
-    },
-    style: {
-        boxShadow: '0px 5px 10px 3px #DEDEDE'   
+    config: {
+        ...BASE_EDITOR_CONFIG,
+        url: EditorProps.fromObject({
+            name: "上传图片",
+            type: EDITORS.input
+        })
     }
 }
 
