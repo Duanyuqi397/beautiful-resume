@@ -46,7 +46,7 @@ type Predictor<T> = (item: T) => boolean
 
 export type TypeFuncMaping = Record<string, React.FC<ComponentProps>>
 
-type EditorType = "Input"|"ColorPicker"|"RichText"|"Select"|"Divider"|"Uploader"
+type EditorType = "Input"|"ColorPicker"|"RichText"|"Select"|"Divider"|"Uploader"|"Position"
 
 // type EditorProps = {
 //     name: string,

@@ -4,7 +4,7 @@ import { Editor, Toolbar } from '@wangeditor/editor-for-react'
 import { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor/editor'
 import { Button, Modal} from 'antd'
 import { BaseEditorProps } from '../types/types'
-
+import { EditFilled } from '@ant-design/icons'
 type RichTextProps = BaseEditorProps<{text: string, html: string}> & {
     toolbarConfigs?: IToolbarConfig,
     editorConfigs?: IEditorConfig
@@ -96,6 +96,7 @@ function RichText(props: RichTextProps) {
                         type="text"
                         block
                     > 
+                        <EditFilled/>
                         点击编辑 
                     </Button>
                 )

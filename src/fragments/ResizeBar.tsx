@@ -160,6 +160,23 @@ const ResizeBar: React.FC<ResizeBarProps> = (props) => {
                     )
                 })
             }
+            {
+                <div
+                    key={1}
+                    style={{
+                        borderStyle: "solid",
+                        borderWidth: "1px",
+                        borderColor: "rgb(41, 182, 242)",
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        zIndex: 999,
+                        width,
+                        height,
+                        pointerEvents: 'none'
+                    }}
+                />
+            }
        </>
     )
     return ReactDOM.createPortal(ResizeBar, props.target)

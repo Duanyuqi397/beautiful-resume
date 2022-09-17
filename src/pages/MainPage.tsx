@@ -39,7 +39,7 @@ const configs: Record<string, any> = importConfigs(
 const icons: Record<string, any> = importIcons(
   require.context("../assets/", false, /[^.]+\.svg$/)
 );
-console.info(icons)
+
 const mapNames: Record<string, string> = {
   BaseAvatar: "头像",
   BaseButton: "按钮",
@@ -109,23 +109,11 @@ export const MainPage = () => {
       onPositionChange: useEvent((id, position) => {
         op.mergePropsTo("drag", id, { position: position as any });
         const component = op.find(id);
-
-        const left = (component.props.style?.left || 0) as number;
-        const top = (component.props.style?.top || 0) as number;
-
         const size = {
-          width: component.props.style.width,
-          height: component.props.style.height,
-        };
-
-        const [transateX, tarnsateY] = position as any;
-
-        const absLeft = left + transateX;
-        const absTop = top + tarnsateY;
-        const absRight = absLeft + utils.parseNumberFromStyle(size.width);
-        const absBottom = absTop + utils.parseNumberFromStyle(size.height);
-
-        align.calAlign(id, [absLeft, absRight, absTop, absBottom]);
+          width: utils.parseNumberFromStyle(component.props.style.width),
+          height: utils.parseNumberFromStyle(component.props.style.height)
+        }
+        align.calAlign(component.id, position as any, size);
       }),
 
       onSizeChange: useEvent((id, size) => {
@@ -144,17 +132,18 @@ export const MainPage = () => {
 
   useEffect(() => {
     function deleteComponent(e: KeyboardEvent){
-      const target = e.target as HTMLElement
-      if(e.code !== 'Backspace' 
-          || target.contentEditable === "true" 
-          || target.nodeName === "INPUT"
-          || (!activeId)
-        ){
-        return
+      if(e.code === "Backspace"){
+        const target = e.target as HTMLElement
+        if(target.contentEditable === "true" 
+            || target.nodeName === "INPUT"
+            || (!activeId)
+          ){
+          return
+        }
+        setActiveId(null)
+        op.remove(activeId)
+        align.removeAlign(activeId)
       }
-      setActiveId(null)
-      op.remove(activeId)
-      align.removeAlign(activeId)
     }
     document.addEventListener("keydown", deleteComponent);
     return () => document.removeEventListener("keydown", deleteComponent);
@@ -172,7 +161,7 @@ export const MainPage = () => {
         canResize: true,
         canDrag: true,
         position: [left, top],
-        disableArea: 10
+        disableArea: 0
       }
     }
     const render = components[type]
@@ -262,6 +251,17 @@ export const MainPage = () => {
                     currentEditor={operation.getEditor(op.find(activeId).type).config}
                     component={op.find(activeId)}
                     updateFn={(newProps: any) => {
+                      const component = op.find(activeId)
+                      const [oldX, oldY] = component.props.drag?.position || [NaN, NaN]
+                      const [newX, newY] = newProps.drag.position || [NaN, NaN]
+
+                      if(oldX !== newX || oldY !== newY){
+                        const size = {
+                          width: utils.parseNumberFromStyle(component.props.style.width),
+                          height: utils.parseNumberFromStyle(component.props.style.height)
+                        }
+                        align.calAlign(activeId, [newX, newY], size)
+                      }
                       op.mergeProps(activeId, newProps)
                     }}
                   />
