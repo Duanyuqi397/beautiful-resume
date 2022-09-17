@@ -6,8 +6,8 @@ type RichTextContainerProps = Cprops & {
     html: string
 }
 
-function getBackgroundColor(html: string|undefined, backgroundColor: string|undefined){
-    if(html || backgroundColor){
+function getBackgroundColor(text: string|undefined, backgroundColor: string|undefined){
+    if((text && text?.length > 0) || backgroundColor){
         return backgroundColor
     }else {
         return "rgba(0, 0, 0, 0.1)"
@@ -16,7 +16,7 @@ function getBackgroundColor(html: string|undefined, backgroundColor: string|unde
 
 const  BaseTextArea: React.FC<any> = (props) => {
     const ref = React.useRef<HTMLDivElement>(null)
-    const backgroundColor = getBackgroundColor(props.html, props.style.backgroundColor)
+    const backgroundColor = getBackgroundColor(props.content?.text, props.style.backgroundColor)
     return (
         <div
             ref={ref}
@@ -29,7 +29,7 @@ const  BaseTextArea: React.FC<any> = (props) => {
         >
             <div
                 style={{width: "100%", height: "100%"}}
-                dangerouslySetInnerHTML={{__html: props.html}} 
+                dangerouslySetInnerHTML={{__html: props.content.html}} 
             >
             </div>
         </div>
@@ -41,7 +41,10 @@ BaseTextArea.defaultProps = {
         width: 150,
         height: 50
     },
-    html: ""
+    content: {
+        html: "",
+        text: ""
+    }
 }
 
 export default BaseTextArea;

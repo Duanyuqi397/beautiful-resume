@@ -8,6 +8,7 @@ const mapNames: Record<string,string> = {
     "BaseInput": "输入框",
     "BaseImg": "图片",
     "BaseTextArea": "文本编辑",
+    "BaseContainer": "容器"
 };
 
 const importIcons = (req: any): Record<string, string> => {  

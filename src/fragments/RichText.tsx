@@ -3,13 +3,24 @@ import { useState, useEffect } from 'react'
 import { Editor, Toolbar } from '@wangeditor/editor-for-react'
 import { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor/editor'
 import { Button, Modal} from 'antd'
+import { BaseEditorProps } from '../types/types'
 
-type RichTextProps = {
-    onChange?: (html: string) => void,
-    value?: string,
+type RichTextProps = BaseEditorProps<{text: string, html: string}> & {
     toolbarConfigs?: IToolbarConfig,
     editorConfigs?: IEditorConfig
 }
+
+const initFormat = [
+    {
+      type: 'paragraph',
+      lineHeight: '0.6',
+      children: [
+        { text: '', fontFamily: '默认字体', fontSize: '12px' }
+      ],
+      textAlign: "left"
+    },
+]
+
 
 function RichText(props: RichTextProps) {
     const [showEditor, setShowEditor] = useState(false)
@@ -42,29 +53,38 @@ function RichText(props: RichTextProps) {
         }
     }, [editor])
 
+    const closeEditor = () => setShowEditor(false)
+    const openEditor = () => setShowEditor(true)
+    const handleChange 
+                    = (editor: IDomEditor) => onChange({html: editor.getHtml(), text: editor.getText()})
+
     return (
-        
             showEditor ? 
                 (
                     <Modal
                         width={"50%"}
                         visible={showEditor}
-                        onOk={() => setShowEditor(false)}
-                        onCancel={() => setShowEditor(false)}
-                        footer={false}
+                        onOk={closeEditor}
+                        onCancel={closeEditor}
+                        footer={[
+                            <Button key="submit" onClick={closeEditor}>
+                                完成
+                            </Button>
+                        ]}
                     >
                        <>
-                        <Toolbar
+                            <Toolbar
                                 editor={editor}
                                 defaultConfig={toolbarConfig}
                                 mode="default"
                                 style={{ borderBottom: '1px solid #ccc' }}
                             />
                             <Editor
+                                defaultContent={initFormat}
                                 defaultConfig={editorConfig}
-                                value={props.value}
+                                value={props.value?.html}
                                 onCreated={setEditor}
-                                onChange={(editor) => onChange(editor.getHtml())}
+                                onChange={handleChange}
                                 style={{ height: '500px', overflowY: 'hidden' }}
                             />
                        </>
@@ -72,7 +92,7 @@ function RichText(props: RichTextProps) {
                 )
                 : (
                     <Button 
-                        onClick={() => setShowEditor(true)}
+                        onClick={openEditor}
                         type="text"
                         block
                     > 
