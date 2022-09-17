@@ -80,8 +80,19 @@ test('merge object', () => {
 //     expect(output).toStrictEqual(expectOutput)
 // })
 
-test("parse border", () => {
-    expect(utils.parseBorder("1px solid rgba(1, 2, 3, 4)")).toStrictEqual(["1px", "solid", "rgba(1, 2, 3, 4)"])
-    expect(utils.parseBorder("1px solid red")).toStrictEqual(["1px", "solid", "red"])
-    expect(utils.parseBorder("1px solid #fffff")).toStrictEqual(["1px", "solid", "#fffff"])
-})
+
+test("group by", () => {
+        const data1 = [
+            {a: 1, b: 2},
+            {a: 2, b: 2},
+            {a: 2, b: 2},
+            {a: 3, b: 2},
+            {a: 3, b: 2}
+        ]
+        expect(utils.groupBy(data1, x => x.a)).toStrictEqual({
+            1: [{a: 1, b: 2}],
+            2: [{a: 2, b: 2}, {a: 2, b: 2}],
+            3: [{a: 3, b: 2}, {a: 3, b: 2}]
+        });
+    }
+)

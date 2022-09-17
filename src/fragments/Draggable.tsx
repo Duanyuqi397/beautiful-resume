@@ -31,7 +31,8 @@ type DragDataProps = {
     ratio?: number,
     style?: React.CSSProperties,
     minRize?: Size,
-    canResize?: boolean
+    canResize?: boolean,
+    allowResizeDirection?: Direction[]
 }
 type Limit = [number, number, number, number]
 
@@ -129,7 +130,8 @@ const Draggable: React.FC<DragProps> = (props) => {
     const sizeLimitRef = React.useRef<Limit>()
 
     const {
-        defaultSize
+        defaultSize,
+        allowResizeDirection,
     } = props
     
     const initWidth = utils.parseNumberFromStyle(style.width) || defaultSize?.width 
@@ -258,6 +260,15 @@ const Draggable: React.FC<DragProps> = (props) => {
         }
     }
 
+    function getAllowDirection(){
+        if(direction){
+            return direction
+        }else if(allowResizeDirection){
+            return allowResizeDirection
+        }
+        return undefined
+    }
+
     function hadleResize(offset: Position, e: MouseEvent){
         let [mouseOffsetX, mouseOffsetY] = getBoundOffset(offset, positionBoundLimitRef.current)
         let [width, height] = directionRef.current
@@ -324,7 +335,7 @@ const Draggable: React.FC<DragProps> = (props) => {
             <ResizeBar 
                 target={targetDomRef.current as HTMLElement}
                 key={2}
-                allowDirections={direction}
+                allowDirections={getAllowDirection()}
                 onResizeStart={handleResizeStart}
                 onResizeEnd={handleResizeEnd}
             />

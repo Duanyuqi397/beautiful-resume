@@ -1,7 +1,7 @@
 import { CSSProperties, DOMAttributes } from "react";
 import { DragDataProps } from "../fragments/Draggable";
-import {Rule} from "antd/lib/form"
-import { type } from "os";
+import { Rule } from "antd/lib/form"
+import { merge } from '../scripts/utils'
 
 export type Component = {
     id: string;
@@ -46,7 +46,7 @@ type Predictor<T> = (item: T) => boolean
 
 export type TypeFuncMaping = Record<string, React.FC<ComponentProps>>
 
-type EditorType = "Input"|"ColorPicker"|"RichText"|"Select"
+type EditorType = "Input"|"ColorPicker"|"RichText"|"Select"|"Divider"|"Uploader"
 
 // type EditorProps = {
 //     name: string,
@@ -92,8 +92,21 @@ class EditorProps{
         return this.props.defaultValue
     }
 
+    public mergeProps(particalProps: Partial<EditorConstructorType>){
+        return new EditorProps(merge(this.props, particalProps))
+    }
+
     static fromObject(props: EditorConstructorType){
     return new EditorProps(props)
+   }
+
+   
+
+   static line(content: string){
+    return new EditorProps({
+        name: content,
+        type: "Divider"
+    })
    }
 }
 

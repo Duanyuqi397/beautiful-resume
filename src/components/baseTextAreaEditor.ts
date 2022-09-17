@@ -6,7 +6,7 @@ const baseTextArea: Editor = {
     component: 'BaseTextArea',
     config: {
         ...BASE_EDITOR_CONFIG,
-        html: EditorProps.fromObject({
+        content: EditorProps.fromObject({
             name: "内容",
             type: EDITORS.richText
         })

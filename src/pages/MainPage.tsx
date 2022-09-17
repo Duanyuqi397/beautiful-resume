@@ -39,7 +39,7 @@ const configs: Record<string, any> = importConfigs(
 const icons: Record<string, any> = importIcons(
   require.context("../assets/", false, /[^.]+\.svg$/)
 );
-
+console.info(icons)
 const mapNames: Record<string, string> = {
   BaseAvatar: "头像",
   BaseButton: "按钮",
@@ -50,6 +50,7 @@ const mapNames: Record<string, string> = {
   BaseInput: "输入框",
   BaseImg: "图片",
   BaseTextArea: "文本编辑",
+  BaseContainer: "容器"
 };
 
 const render = new RenderEngine(components);

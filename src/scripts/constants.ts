@@ -5,7 +5,8 @@ import { CSSProperties } from "react";
 const EDITORS = {
      input: "Input" as EditorType,
      richText: "RichText" as EditorType,
-     select: "Select" as EditorType
+     select: "Select" as EditorType,
+     uploader: "Uploader" as EditorType
 }
 
 const Validtors = {
@@ -19,27 +20,31 @@ const Validtors = {
     } as Rule
 }
 
-const FIELDS: Record<string, EditorProps> = {
+const FIELDS = {
     width: EditorProps.fromObject({
         name: "长度",
         type: EDITORS.input,
         validateRules: [Validtors.required, Validtors.number],
+        group: "样式",
         otherProps: {returnType: "number"},
     }),
     height: EditorProps.fromObject({
         name: "宽度",
         type: EDITORS.input,
         validateRules: [Validtors.required, Validtors.number],
+        group: "样式",
         otherProps: {returnType: "number"},
     }),
     backgroundColor: EditorProps.fromObject({
         name: "填充",
+        group: "背景",
         type: EDITORS.input,
     }),
     borderWidth: EditorProps.fromObject({
         name: "线条宽度",
         type: EDITORS.input,
         defaultValue: 0,
+        group: "边框",
         otherProps: {
            addonAfter: "px",
            isNumber: true,
@@ -50,6 +55,7 @@ const FIELDS: Record<string, EditorProps> = {
         name: "线型",
         type: EDITORS.select,
         defaultValue: "none",
+        group: "边框",
         otherProps: {
             options: [
                 {
@@ -57,16 +63,35 @@ const FIELDS: Record<string, EditorProps> = {
                     value: "none"
                 },
                 {
-                    name: "虚线",
+                    name: "——————",
+                    value: "solid"
+                },
+                {
+                    name: "-----",
                     value: "dashed"
                 },
                 {
-                    name: "实线",
-                    value: "solid"
+                    name: ".....",
+                    value: "dotted"
                 }
             ]
         }
-    })
+    }),
+    zIndex: EditorProps.fromObject({
+        name: "层级",
+        type: EDITORS.input,
+        group: "位置",
+        defaultValue: 0,
+        otherProps: {
+            isNumber: true,
+            addonAfter: ""
+        }
+    }),
+    plainText: EditorProps.fromObject({
+        name: "内容",
+        type: EDITORS.input,
+        group: ""
+    }),
 }
 
 const BASE_EDITOR_CONFIG: {
@@ -79,7 +104,8 @@ const BASE_EDITOR_CONFIG: {
         height: FIELDS.height,
         backgroundColor: FIELDS.backgroundColor,
         borderWidth: FIELDS.borderWidth,
-        borderStyle: FIELDS.borderStyle
+        borderStyle: FIELDS.borderStyle,
+        zIndex: FIELDS.zIndex
     }
 }
 

@@ -1,5 +1,6 @@
 import { EditorProps, ConfigProps } from '../types/types'
 import { useCallback, useRef } from 'react'
+import { type } from 'os'
 
 function parseNumberFromStyle(style: undefined): undefined
 function parseNumberFromStyle(style: number|string): number
@@ -86,11 +87,32 @@ function parseBorder(border: string|undefined){
     return undefined
 }
 
+function groupBy<T, K extends string|number>(array: T[], keyFunc: (item: T) => K): {[P in K]: T[]}{
+    const res = new Map<K, T[]>()
+    array.forEach(item => {
+        const key = keyFunc(item)
+        if(res.has(key)){
+            res.get(key)?.push(item)
+        }else{
+            res.set(key, [item])
+        }
+    })
+    return Object.fromEntries(res.entries()) as unknown as {[P in K]: T[]}
+}
+
+const Identify = <T>(x: T) => x
+
 export {
     parseNumberFromStyle,
     removeKeys,
     merge,
     flatConfigs,
     debounce,
-    parseBorder
+    parseBorder,
+    groupBy,
+    Identify
+}
+
+export type {
+    ConfigPath
 }
