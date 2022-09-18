@@ -9,7 +9,7 @@ const BaseImg: React.FC<BaseImgProps> = (props: any) => {
       <div
         {...props}
         tabIndex="-1"
-        style={{backgroundImage: groundUrl, backgroundColor: props.url ? undefined : '#DEDEDE', backgroundSize: "100% 100%", ...props.style}}
+        style={{backgroundImage: groundUrl, backgroundColor: props.url ? undefined : '#DEDEDE', backgroundSize: "cover", ...props.style}}
       >
         {/* <Image
           style={{height: "100%", width: "100%"}}
@@ -23,7 +23,10 @@ const BaseImg: React.FC<BaseImgProps> = (props: any) => {
 BaseImg.defaultProps = {
   style: {
     width: 150,
-    height: 150 
+    height: 150
+  },
+  drag: {
+    keepRatio: true
   }
 }
 

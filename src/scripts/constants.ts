@@ -25,14 +25,14 @@ const Validtors = {
 
 const FIELDS = {
     width: EditorProps.fromObject({
-        name: "长度",
+        name: "宽度",
         type: EDITORS.input,
         validateRules: [Validtors.required, Validtors.number],
         group: "样式",
         otherProps: {returnType: "number"},
     }),
     height: EditorProps.fromObject({
-        name: "宽度",
+        name: "高度",
         type: EDITORS.input,
         validateRules: [Validtors.required, Validtors.number],
         group: "样式",

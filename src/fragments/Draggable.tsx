@@ -28,7 +28,7 @@ type DragDataProps = {
     canDrag?:boolean,
     showResizeBox?: boolean,
     defaultSize?: Size,
-    keepRatio?: number,
+    keepRatio?: boolean,
     style?: React.CSSProperties,
     minRize?: Size,
     canResize?: boolean,
