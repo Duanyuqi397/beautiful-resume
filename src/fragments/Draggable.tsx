@@ -28,7 +28,7 @@ type DragDataProps = {
     canDrag?:boolean,
     showResizeBox?: boolean,
     defaultSize?: Size,
-    ratio?: number,
+    keepRatio?: number,
     style?: React.CSSProperties,
     minRize?: Size,
     canResize?: boolean,
@@ -262,6 +262,9 @@ const Draggable: React.FC<DragProps> = (props) => {
     }
 
     function getAllowDirection(){
+        if(props.keepRatio){
+            return ["left", "right", "up", "down"] as Direction[]
+        }
         if(direction){
             return direction
         }else if(allowResizeDirection){
@@ -275,9 +278,19 @@ const Draggable: React.FC<DragProps> = (props) => {
         let [width, height] = directionRef.current
                                         ? calOffsetByDirection([mouseOffsetX, mouseOffsetY], directionRef.current)
                                         : offset
+        
         const newSize = {
             width: Math.max(startSizeRef.current.width + width, props.minRize?.width || 10) ,
             height: Math.max(startSizeRef.current.height + height, props.minRize?.height || 10)
+        }
+
+        if(props.keepRatio){
+            const ratio = startSizeRef.current.width / startSizeRef.current.height
+            if(Math.abs(width) > Math.abs(height)){
+                newSize.height = newSize.width / ratio
+            }else{
+                newSize.width = newSize.height * ratio
+            }
         }
 
         const posOffset = [
