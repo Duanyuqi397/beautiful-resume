@@ -16,7 +16,6 @@ type ImageEditorProps = BaseEditorProps<string>;
 type urlType = "net" | "local";
 
 const ImageEditor: React.FC<ImageEditorProps> = (props) => {
-  const [loading, setLoading] = useState(false);
   const [radioValue, setRadioValue] = useState<urlType>("net");
   const [inputValue,setInputValue] = useState("");
 
@@ -65,7 +64,6 @@ const ImageEditor: React.FC<ImageEditorProps> = (props) => {
           beforeUpload={beforeUpload}
         >
           <div>
-            {loading ? <LoadingOutlined /> : <PlusOutlined />}
             <div style={{ marginTop: 8 }}>Upload</div>
           </div>
         </Upload>

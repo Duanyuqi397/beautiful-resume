@@ -156,7 +156,7 @@ export const MainPage = () => {
 
   useEffect(() => {
     document.addEventListener('paste',(e: ClipboardEvent) => {
-      e.preventDefault();
+      // e.preventDefault();
       if(!e.clipboardData?.files) return;
       const filesData = e.clipboardData.items;
       const fileInfo = Array.from(filesData).find(item => item.type === "image/png");
