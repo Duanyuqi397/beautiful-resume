@@ -105,6 +105,16 @@ function ConfigPanel(props: {updateFn: any, component: Component, currentEditor:
       }}
       onFinishFailed={(err) => console.info('validate error', err)}
       onValuesChange={(e) => {
+        if(e.url){
+          const img = new Image();
+          img.src = e.url;
+          img.onload = function(e: any){
+            const height = e.path[0].naturalHeight;
+            const width = e.path[0].naturalWidth;
+            const ratio = (width / height).toString();
+            localStorage.setItem(component.id, ratio);
+          };
+        }
         if(e.drag?.position){
           form.submit()
         }else{
@@ -115,18 +125,6 @@ function ConfigPanel(props: {updateFn: any, component: Component, currentEditor:
       {
         configItems
       }
-      {/* {keys.length !== 0 && (
-        <div>
-          <Row justify="space-between" align="middle" style={{padding: '0 40px'}} >
-            <Form.Item>
-              <Button style={{ margin: "0 4px" }} onClick={onReset}>还原</Button>
-            </Form.Item>
-            <Form.Item>
-              <Button htmlType="submit">保存</Button>
-            </Form.Item>
-          </Row>
-        </div>
-      )} */}
     </Form>
   );
 }

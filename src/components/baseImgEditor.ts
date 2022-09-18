@@ -7,8 +7,8 @@ const baseImgEditor = {
     config: {
         ...BASE_EDITOR_CONFIG,
         url: EditorProps.fromObject({
-            name: "上传图片",
-            type: EDITORS.input
+            name: "图片选择",
+            type: EDITORS.uploader
         })
     }
 }

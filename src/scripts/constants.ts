@@ -8,7 +8,8 @@ const EDITORS = {
      select: "Select" as EditorType,
      uploader: "Uploader" as EditorType,
      position: "position" as EditorType,
-     colorPicker: "colorPicker" as EditorType
+     colorPicker: "colorPicker" as EditorType,
+     image: "image" as EditorType
 }
 
 const Validtors = {

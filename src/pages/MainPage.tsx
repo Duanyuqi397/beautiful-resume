@@ -154,6 +154,21 @@ export const MainPage = () => {
     containerRef.current = container;
   }, []);
 
+  useEffect(() => {
+    document.addEventListener('paste',(e: ClipboardEvent) => {
+      if(!e.clipboardData?.files) return;
+      const filesData = e.clipboardData.files;
+      console.info('filesData', e.clipboardData.files);
+      // const imgInfo = filesData.find((item: any) => item.type === "image/png");
+      const imgInfo: any = null;
+      for(let i = 0; i < filesData.length; i++){
+        if(filesData[i].type === "image/png"){
+          // filesData[i].getAsFile();
+        }
+      }
+    })
+  },[])
+
   function addComponent(type: string, left: number, top: number) {
     const initProps: Cprops = {
       style: {left: 0, top: 0, position: "absolute", width: 0, height: 0},

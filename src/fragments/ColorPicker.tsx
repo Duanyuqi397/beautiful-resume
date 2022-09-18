@@ -14,7 +14,7 @@ const ColorPicker: React.FC<ColorPickerProps> = (props) => {
     const [color, setColor] = React.useState<any>("")
     return (
         <Popover 
-            visible = {open}
+            open = {open}
             placement="top" 
             content={
                 <SketchPicker
@@ -26,7 +26,7 @@ const ColorPicker: React.FC<ColorPickerProps> = (props) => {
                     color={color}
                 />
             }
-            onVisibleChange={(e) => setOpen(e)}
+            onOpenChange={(e) => setOpen(e)}
         >
             <div
                 style={{
