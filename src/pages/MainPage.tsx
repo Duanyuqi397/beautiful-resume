@@ -156,20 +156,23 @@ export const MainPage = () => {
 
   useEffect(() => {
     document.addEventListener('paste',(e: ClipboardEvent) => {
+      e.preventDefault();
       if(!e.clipboardData?.files) return;
-      const filesData = e.clipboardData.files;
-      console.info('filesData', e.clipboardData.files);
-      // const imgInfo = filesData.find((item: any) => item.type === "image/png");
-      const imgInfo: any = null;
-      for(let i = 0; i < filesData.length; i++){
-        if(filesData[i].type === "image/png"){
-          // filesData[i].getAsFile();
-        }
+      const filesData = e.clipboardData.items;
+      const fileInfo = Array.from(filesData).find(item => item.type === "image/png");
+      const imgInfo = fileInfo?.getAsFile();
+      if(imgInfo){
+        const url = URL.createObjectURL(imgInfo);
+        const newComponent = addComponent('BaseImg', 0, 0, url);
+        console.log('newComponent',newComponent)
+        // utils.merge(newComponent.props, {url})
       }
+      
     })
+    return () => document.removeEventListener('paste', () => {});
   },[])
 
-  function addComponent(type: string, left: number, top: number) {
+  function addComponent(type: string, left: number, top: number, url?: string) {
     const initProps: Cprops = {
       style: {left: 0, top: 0, position: "absolute", width: 0, height: 0},
       drag: {
@@ -177,7 +180,8 @@ export const MainPage = () => {
         canDrag: true,
         position: [left, top],
         disableArea: 0
-      }
+      },
+      url
     }
     const render = components[type]
     if(!render){
@@ -251,6 +255,7 @@ export const MainPage = () => {
               </div>
             </div>
           </Col>
+          {/* 预览区域 */}
           <Col span={16}>
             <div className="view-area block">{render.render(op.getMap())}</div>
           </Col>
