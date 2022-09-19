@@ -16,6 +16,7 @@ function useArray<T>(array: T[]){
     const [items, setItems] = React.useState(array)
     
     function add(item: T){
+        console.info(items)
         setItems([...items, item])
     }
 

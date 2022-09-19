@@ -154,22 +154,21 @@ export const MainPage = () => {
     containerRef.current = container;
   }, []);
 
+
+  const createImageWhenPaste = useEvent((e: ClipboardEvent) => {
+    if(!e.clipboardData?.files) return;
+    const filesData = e.clipboardData.items;
+    const fileInfo = Array.from(filesData).find(item => item.type === "image/png");
+    const imgInfo = fileInfo?.getAsFile();
+    if(imgInfo){
+      const url = URL.createObjectURL(imgInfo);
+      addComponent('BaseImg', 0, 0, url);
+    }
+  })
+
   useEffect(() => {
-    document.addEventListener('paste',(e: ClipboardEvent) => {
-      // e.preventDefault();
-      if(!e.clipboardData?.files) return;
-      const filesData = e.clipboardData.items;
-      const fileInfo = Array.from(filesData).find(item => item.type === "image/png");
-      const imgInfo = fileInfo?.getAsFile();
-      if(imgInfo){
-        const url = URL.createObjectURL(imgInfo);
-        const newComponent = addComponent('BaseImg', 0, 0, url);
-        console.log('newComponent',newComponent)
-        // utils.merge(newComponent.props, {url})
-      }
-      
-    })
-    return () => document.removeEventListener('paste', () => {});
+    document.addEventListener('paste', createImageWhenPaste)
+    return () => document.removeEventListener('paste', createImageWhenPaste);
   },[])
 
   function addComponent(type: string, left: number, top: number, url?: string) {
