@@ -1,7 +1,7 @@
 import { Row, Col } from "antd";
 import "./MainPage.css";
 import importComponents from "../scripts/importComponents";
-import { Component, Cprops } from "../types/types";
+import { BaseEditorProps, Component, Cprops } from "../types/types";
 import { RenderEngine } from "../fragments/renderEngine";
 import ConfigPanel from "../fragments/ConfigPanel";
 import { useComponents, useMap } from "../fragments/dataHook";
@@ -50,7 +50,7 @@ const mapNames: Record<string, string> = {
   BaseInput: "输入框",
   BaseImg: "图片",
   BaseTextArea: "文本编辑",
-  BaseContainer: "容器"
+  BaseContainer: "容器",
 };
 
 const render = new RenderEngine(components);
@@ -91,7 +91,7 @@ function offsetSet(container: HTMLElement, element: HTMLElement) {
 
 export const MainPage = () => {
   const operation = configEngine(configs);
-  const [activeId, setActiveId] = useState<string|null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const position = useMap<number, [number, number]>(new Map());
   const containerRef = useRef<HTMLElement | null>(null);
   const nameRef = useRef<Map<number, HTMLElement | null>>(new Map());
@@ -111,8 +111,8 @@ export const MainPage = () => {
         const component = op.find(id);
         const size = {
           width: utils.parseNumberFromStyle(component.props.style.width),
-          height: utils.parseNumberFromStyle(component.props.style.height)
-        }
+          height: utils.parseNumberFromStyle(component.props.style.height),
+        };
         align.calAlign(component.id, position as any, size);
       }),
 
@@ -127,22 +127,23 @@ export const MainPage = () => {
       onResizeEnd: useEvent((id, size) => {
         align.resetAlign();
       }),
-    }
+    },
   });
 
   useEffect(() => {
-    function deleteComponent(e: KeyboardEvent){
-      if(e.code === "Backspace"){
-        const target = e.target as HTMLElement
-        if(target.contentEditable === "true" 
-            || target.nodeName === "INPUT"
-            || (!activeId)
-          ){
-          return
+    function deleteComponent(e: KeyboardEvent) {
+      if (e.code === "Backspace") {
+        const target = e.target as HTMLElement;
+        if (
+          target.contentEditable === "true" ||
+          target.nodeName === "INPUT" ||
+          !activeId
+        ) {
+          return;
         }
-        setActiveId(null)
-        op.remove(activeId)
-        align.removeAlign(activeId)
+        setActiveId(null);
+        op.remove(activeId);
+        align.removeAlign(activeId);
       }
     }
     document.addEventListener("keydown", deleteComponent);
@@ -154,40 +155,78 @@ export const MainPage = () => {
     containerRef.current = container;
   }, []);
 
-
   const createImageWhenPaste = useEvent((e: ClipboardEvent) => {
-    if(!e.clipboardData?.files) return;
+    if (!e.clipboardData?.files) return;
     const filesData = e.clipboardData.items;
-    const fileInfo = Array.from(filesData).find(item => item.type === "image/png");
+    const fileInfo = Array.from(filesData).find(
+      (item) => item.type === "image/png"
+    );
     const imgInfo = fileInfo?.getAsFile();
-    if(imgInfo){
+    if (imgInfo) {
       const url = URL.createObjectURL(imgInfo);
-      addComponent('BaseImg', 0, 0, url);
+      if(components['BaseImg'].defaultProps){
+        const componentWidth = components['BaseImg'].defaultProps.style.width;
+        utils.adjustImage(url, componentWidth).then(
+          (data) => {
+            const defaultProps = {
+              style: {
+                width: data.componentWidth,
+                height: data.realHeight
+              },
+              drag: {
+                keepRatio: true
+              }
+            };
+            addImgComponent("BaseImg", 0, 0, defaultProps, url);
+          }
+        )
+      }
     }
-  })
+  });
 
   useEffect(() => {
-    document.addEventListener('paste', createImageWhenPaste)
-    return () => document.removeEventListener('paste', createImageWhenPaste);
-  },[])
+    document.addEventListener("paste", createImageWhenPaste);
+    return () => document.removeEventListener("paste", createImageWhenPaste);
+  }, []);
 
-  function addComponent(type: string, left: number, top: number, url?: string) {
+  function addImgComponent(type: string, left: number, top: number, defaultProps: Partial<BaseEditorProps>, url?: string) {
     const initProps: Cprops = {
-      style: {left: 0, top: 0, position: "absolute", width: 0, height: 0},
+      style: { left: 0, top: 0, position: "absolute", width: 0, height: 0 },
       drag: {
         canResize: true,
         canDrag: true,
         position: [left, top],
-        disableArea: 0
+        disableArea: 0,
       },
-      url
+      url,
+    };
+
+    const render = components[type];
+    if (!render) {
+      throw new Error("can find render with type: " + type);
     }
-    const render = components[type]
-    if(!render){
-      throw new Error('can find render with type: ' + type)
+    const props = utils.merge(initProps, defaultProps);
+    const component = op.add(type, props);
+    return component;
+  }
+
+  function addComponent(type: string, left: number, top: number) {
+    const initProps: Cprops = {
+      style: { left: 0, top: 0, position: "absolute", width: 0, height: 0 },
+      drag: {
+        canResize: true,
+        canDrag: true,
+        position: [left, top],
+        disableArea: 0,
+      }
+    };
+
+    const render = components[type];
+    if (!render) {
+      throw new Error("can find render with type: " + type);
     }
-    const props = utils.merge(initProps, render.defaultProps ?? {})
-    const component = op.add(type, props)
+    const props = utils.merge(initProps, render.defaultProps ?? {});
+    const component = op.add(type, props);
     return component;
   }
 
@@ -200,15 +239,40 @@ export const MainPage = () => {
     const containByContainer = contains(containerRef.current, element);
     if (containByContainer) {
       const [left, top] = offsetSet(containerRef.current, element);
-      const gridLeft = Math.floor(left)
-      const gridTop = Math.floor(top)
+      const gridLeft = Math.floor(left);
+      const gridTop = Math.floor(top);
       const newComponent = addComponent(type, gridLeft, gridTop);
       setActiveId(newComponent.id);
-      const width = utils.parseNumberFromStyle(newComponent.props.style.width)
-      const height = utils.parseNumberFromStyle(newComponent.props.style.height)
-      align.setPosition(newComponent.id, [gridLeft, gridLeft + width, gridTop, gridTop + height])
+      const width = utils.parseNumberFromStyle(newComponent.props.style.width);
+      const height = utils.parseNumberFromStyle(
+        newComponent.props.style.height
+      );
+      align.setPosition(newComponent.id, [
+        gridLeft,
+        gridLeft + width,
+        gridTop,
+        gridTop + height,
+      ]);
     }
     position.set(index, [0, 0]);
+  }
+
+  function configUpdateFn(newProps: any) {
+    if (activeId) {
+      const component = op.find(activeId);
+      const [oldX, oldY] = component.props.drag?.position || [NaN, NaN];
+      const [newX, newY] = newProps.drag.position || [NaN, NaN];
+
+      if (oldX !== newX || oldY !== newY) {
+        const size = {
+          width: utils.parseNumberFromStyle(component.props.style.width),
+          height: utils.parseNumberFromStyle(component.props.style.height),
+        };
+        align.calAlign(activeId, [newX, newY], size);
+      }
+      op.mergeProps(activeId, newProps);
+      debugger
+    }
   }
 
   return (
@@ -267,22 +331,11 @@ export const MainPage = () => {
               <div className="config">
                 {activeId && (
                   <ConfigPanel
-                    currentEditor={operation.getEditor(op.find(activeId).type).config}
+                    currentEditor={
+                      operation.getEditor(op.find(activeId).type).config
+                    }
                     component={op.find(activeId)}
-                    updateFn={(newProps: any) => {
-                      const component = op.find(activeId)
-                      const [oldX, oldY] = component.props.drag?.position || [NaN, NaN]
-                      const [newX, newY] = newProps.drag.position || [NaN, NaN]
-
-                      if(oldX !== newX || oldY !== newY){
-                        const size = {
-                          width: utils.parseNumberFromStyle(component.props.style.width),
-                          height: utils.parseNumberFromStyle(component.props.style.height)
-                        }
-                        align.calAlign(activeId, [newX, newY], size)
-                      }
-                      op.mergeProps(activeId, newProps)
-                    }}
+                    updateFn={configUpdateFn}
                   />
                 )}
               </div>

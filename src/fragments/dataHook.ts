@@ -16,7 +16,6 @@ function useArray<T>(array: T[]){
     const [items, setItems] = React.useState(array)
     
     function add(item: T){
-        console.info(items)
         setItems([...items, item])
     }
 
@@ -146,7 +145,6 @@ function useComponents(root: Omit<Component, 'id'|'children'>, handlers: Handler
             return component
         })
         .filter(component => component.id !== id)
-        console.info(newComponents)
         op.set(newComponents)
     }
 

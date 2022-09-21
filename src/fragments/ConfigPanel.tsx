@@ -126,23 +126,20 @@ function ConfigPanel(props: {
       onValuesChange={(e) => {
         if (e.url) {
           const url = e.url;
-          const img = new Image();
-          img.src = e.url;
-          img.onload = function (e: any) {
-            const height = e.path[0].naturalHeight;
-            const width = e.path[0].naturalWidth;
-            const componentWidth = componentProps.style.width as number;
-            const realHeight = (componentWidth / width) * height;
-
-            updateFn(
-              utils.merge(component.props, {
-                style: { width: componentWidth, height: realHeight },
-                url
-              })
-            );
-          };
+          utils
+            .adjustImage(e.url, componentProps.style.width as number)
+            .then((data) => {
+              updateFn(
+                utils.merge(component.props, {
+                  style: {
+                    width: data.componentWidth,
+                    height: data.realHeight,
+                  },
+                  url
+                })
+              );
+            });
           return;
-
         }
         if (e.drag?.position) {
           form.submit();
@@ -150,10 +147,8 @@ function ConfigPanel(props: {
           submit();
         }
       }}
-      >
-      {
-        configItems
-      }
+    >
+      {configItems}
     </Form>
   );
 }
