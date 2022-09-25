@@ -1,4 +1,4 @@
-import { Row, Col } from "antd";
+import { Row, Col, Button } from "antd";
 import "./MainPage.css";
 import importComponents from "../scripts/importComponents";
 import { BaseEditorProps, Component, Cprops } from "../types/types";
@@ -24,6 +24,7 @@ import * as utils from "../scripts/utils";
 import edit from "../assets/others/edit.svg";
 import dictionary from "../assets/others/dictionary.svg";
 import config from "../assets/others/config.svg";
+import exportPDF from "../scripts/exportPDF";
 
 //引入components下的组件
 const components: Record<string, React.FC<any>> = importComponents(
@@ -230,6 +231,10 @@ export const MainPage = () => {
     return component;
   }
 
+  function onExportPDF(){
+    containerRef.current && exportPDF('测试一下',containerRef.current);
+  }
+
   function onDragEnd(index: number, type: string) {
     const element = nameRef.current.get(index) || null;
     if (element === null || containerRef.current === null) {
@@ -278,8 +283,11 @@ export const MainPage = () => {
     <div>
       {align.hasAlign() ? <AuxiliaryLine lines={align.alignPositions} /> : null}
       <div className="header">
-        <img src={edit} alt="" />
-        编辑自定义组件
+        <div>
+          <img src={edit} alt="" />
+            编辑自定义组件
+          </div>
+        <Button onClick={onExportPDF}>导出PDF</Button>
       </div>
       <div>
         <Row>
