@@ -271,7 +271,6 @@ export const MainPage = () => {
         align.calAlign(activeId, [newX, newY], size);
       }
       op.mergeProps(activeId, newProps);
-      debugger
     }
   }
 
