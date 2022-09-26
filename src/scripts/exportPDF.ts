@@ -2,10 +2,11 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 async function exportPDF(title: string, element: HTMLElement){
-    // 根据dpi放大，防止图片模糊
-  const scale = window.devicePixelRatio > 1 ? window.devicePixelRatio : 2;
+  // 根据dpi放大，防止图片模糊
+  // const scale = window.devicePixelRatio > 1 ? window.devicePixelRatio : 2;
+  const scale = window.devicePixelRatio;
   // 下载尺寸 a4 纸 比例
-  let pdf = new jsPDF('p', 'pt', 'a4');
+  let pdf = new jsPDF('p', 'pt', 'a4', true);
   let width = element.offsetWidth;
   let height = element.offsetHeight;
 
@@ -15,12 +16,10 @@ async function exportPDF(title: string, element: HTMLElement){
   const contentWidth = canvas.width;
   const contentHeight = canvas.height;
 
-  console.log('contentWidth', contentWidth, contentHeight)
   //一页pdf显示html页面生成的canvas高度;
   const pageHeight = contentWidth / 592.28 * 841.89;
   //未生成pdf的html页面高度
   let leftHeight = contentHeight;
-  console.log('leftHeight', leftHeight)
   //页面偏移
   let position = 0;
   //a4纸的尺寸[595.28,841.89]，html页面生成的canvas在pdf中图片的宽高
@@ -50,7 +49,7 @@ async function exportPDF(title: string, element: HTMLElement){
     pdf.addImage(imgDataUrl, 'png', 0, 0, imgWidth, imgHeight);
   } else {    // 分页
     while (leftHeight > 0) {
-      pdf.addImage(imgDataUrl, 'png', 0, position, imgWidth, imgHeight)
+      pdf.addImage(imgDataUrl, 'png', 0, position, imgWidth, imgHeight, 'FAST')
       leftHeight -= pageHeight;
       position -= 841.89;
       //避免添加空白页
