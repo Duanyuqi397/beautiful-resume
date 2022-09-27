@@ -1,36 +1,32 @@
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Editor, Toolbar } from '@wangeditor/editor-for-react'
 import { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor/editor'
 import { Button, Modal} from 'antd'
 import { BaseEditorProps } from '../types/types'
 import { EditFilled } from '@ant-design/icons'
+
 type RichTextProps = BaseEditorProps<{text: string, html: string}> & {
     toolbarConfigs?: IToolbarConfig,
     editorConfigs?: IEditorConfig
 }
 
-const initFormat = [
-    {
-      type: 'paragraph',
-      lineHeight: '0.6',
-      children: [
-        { text: '', fontFamily: '默认字体', fontSize: '12px' }
-      ],
-      textAlign: "left"
-    },
-]
+const defaultHtml = `<p style="line-height: 1; text-align: left;"><span style="font-size: 14px; font-family: 微软雅黑;"></span></p>`
 
-
-function RichText(props: RichTextProps) {
-    const [showEditor, setShowEditor] = useState(false)
+function InnerEditor(props: RichTextProps){
     const {
         onChange = () => {},
         toolbarConfigs = {},
-        editorConfigs = {}
+        editorConfigs = {},
+        value
     } = props
 
     const [editor, setEditor] = useState<IDomEditor | null>(null)
+
+    const initHtml = value?.html === '' ? defaultHtml: value?.html
+
+    const handleChange 
+                    = (editor: IDomEditor) => onChange({html: editor.getHtml(), text: editor.getText()})
 
     const toolbarConfig: Partial<IToolbarConfig> = { 
         excludeKeys: [
@@ -47,23 +43,42 @@ function RichText(props: RichTextProps) {
 
     useEffect(() => {
         return () => {
-            if (editor == null) return
-            editor.destroy()
-            setEditor(null)
+            if(editor !== null){
+                editor.destroy()
+            }
         }
     }, [editor])
 
+    return (
+        <>
+            <Toolbar
+                editor={editor}
+                defaultConfig={toolbarConfig}
+                mode="default"
+                style={{ borderBottom: '1px solid #ccc' }}
+            />
+            <Editor
+                defaultHtml={initHtml}
+                defaultConfig={editorConfig}
+                value={value?.html}
+                onCreated={setEditor}
+                onChange={handleChange}
+                style={{ height: '500px', overflowY: 'hidden' }}
+            />
+        </>
+    )
+}
+
+function RichText(props: RichTextProps) {
+    const [showEditor, setShowEditor] = useState(false)
     const closeEditor = () => setShowEditor(false)
     const openEditor = () => setShowEditor(true)
-    const handleChange 
-                    = (editor: IDomEditor) => onChange({html: editor.getHtml(), text: editor.getText()})
-
     return (
             showEditor ? 
                 (
                     <Modal
                         width={"50%"}
-                        visible={showEditor}
+                        open={showEditor}
                         onOk={closeEditor}
                         onCancel={closeEditor}
                         footer={[
@@ -72,22 +87,7 @@ function RichText(props: RichTextProps) {
                             </Button>
                         ]}
                     >
-                       <>
-                            <Toolbar
-                                editor={editor}
-                                defaultConfig={toolbarConfig}
-                                mode="default"
-                                style={{ borderBottom: '1px solid #ccc' }}
-                            />
-                            <Editor
-                                defaultContent={initFormat}
-                                defaultConfig={editorConfig}
-                                value={props.value?.html}
-                                onCreated={setEditor}
-                                onChange={handleChange}
-                                style={{ height: '500px', overflowY: 'hidden' }}
-                            />
-                       </>
+                       <InnerEditor {...props} />
                     </Modal>
                 )
                 : (
