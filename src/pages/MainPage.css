@@ -13,6 +13,29 @@
     z-index: 100;
 }
 
+.header-title {
+    display: flex;
+    align-items: center;
+}
+
+.input-header {
+    border-radius: 15px;
+    height: 28px;
+    vertical-align: middle;
+    margin-left: 6px;
+    background-color: rgb(246,246,246);
+}
+
+.input-header:focus {
+    background-color: #fff;
+    border-color: rgb(49, 49, 49);
+    box-shadow: none;
+}
+
+.input-header:hover {
+    border-color: rgb(27, 27, 27);
+}
+
 img {
     width: 24px;
     height: 24px;

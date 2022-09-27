@@ -1,4 +1,4 @@
-import { Row, Col, Button } from "antd";
+import { Row, Col, Button, Input } from "antd";
 import "./MainPage.css";
 import importComponents from "../scripts/importComponents";
 import { BaseEditorProps, Component, Cprops } from "../types/types";
@@ -91,6 +91,7 @@ function offsetSet(container: HTMLElement, element: HTMLElement) {
 }
 
 export const MainPage = () => {
+  const [title,setTitle] = useState("我的简历");
   const operation = configEngine(configs);
   const [activeId, setActiveId] = useState<string | null>(null);
   const position = useMap<number, [number, number]>(new Map());
@@ -232,7 +233,7 @@ export const MainPage = () => {
   }
 
   function onExportPDF(){
-    containerRef.current && exportPDF('测试一下',containerRef.current);
+    containerRef.current && exportPDF(title,containerRef.current);
   }
 
   function onDragEnd(index: number, type: string) {
@@ -283,9 +284,13 @@ export const MainPage = () => {
     <div>
       {align.hasAlign() ? <AuxiliaryLine lines={align.alignPositions} /> : null}
       <div className="header">
-        <div>
-          <img src={edit} alt="" />
-            编辑自定义组件
+          <div className="header-title">
+            <img src={edit} alt="" />
+            <Input placeholder="输入你的简历名字" 
+              className="input-header" 
+              onBlur={e => setTitle(e.target.value)}
+              // onPressEnter={e => setTitle(e.target)}
+            />
           </div>
         <Button onClick={onExportPDF}>导出PDF</Button>
       </div>
