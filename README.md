@@ -1,3 +1,7 @@
+# About 
+
+You can design your resume by your self here, without paying for the template like other resume platform! 
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
