@@ -157,13 +157,26 @@ export const MainPage = () => {
     containerRef.current = container;
   }, []);
 
-  const createImageWhenPaste = useEvent((e: ClipboardEvent) => {
-    if (!e.clipboardData?.files) return;
-    const filesData = e.clipboardData.items;
-    const fileInfo = Array.from(filesData).find(
+  const createComponentWhenPaste = useEvent((e: ClipboardEvent) => {
+    if (!e.clipboardData?.items) return;
+    const data = e.clipboardData.items;
+    const imgData = Array.from(data).find(
       (item) => item.type === "image/png"
     );
-    const imgInfo = fileInfo?.getAsFile();
+
+    const componentInfo = Array.from(data).find(
+      (item) => item.type === "text/plain"
+    )
+    componentInfo?.getAsString((componentStr) => {
+      const component = JSON.parse(componentStr);
+      const [x, y] = component.props.drag.position;
+      delete component.id;
+      delete component.children;
+      component.props.drag.position = [x + 10, y + 10];
+      addImgComponent(component.type, 0, 0, component.props);
+    })
+
+    const imgInfo = imgData?.getAsFile();
     if (imgInfo) {
       const url = URL.createObjectURL(imgInfo);
       if(components['BaseImg'].defaultProps){
@@ -186,9 +199,22 @@ export const MainPage = () => {
     }
   });
 
+  const copyComponent = useEvent((e: ClipboardEvent) => {
+    if(!activeId){
+      return
+    }
+    e.clipboardData?.setData('text/plain', JSON.stringify(op.find(activeId)));
+    e.preventDefault();
+  })
+
   useEffect(() => {
-    document.addEventListener("paste", createImageWhenPaste);
-    return () => document.removeEventListener("paste", createImageWhenPaste);
+    document.addEventListener("copy",copyComponent);
+    return () => document.removeEventListener("copy",copyComponent);
+  },[])
+
+  useEffect(() => {
+    document.addEventListener("paste", createComponentWhenPaste);
+    return () => document.removeEventListener("paste", createComponentWhenPaste);
   }, []);
 
   function addImgComponent(type: string, left: number, top: number, defaultProps: Partial<BaseEditorProps>, url?: string) {
