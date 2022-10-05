@@ -1,5 +1,3 @@
-
-
 declare module 'react-color'{
     type SketchPickerProps = {
         onChange: (color: any) => void,

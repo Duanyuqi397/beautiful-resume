@@ -1,15 +1,39 @@
 .header {
     background-color: #fff;
     display: flex;
+    justify-content: space-between;
     align-items: center;
     height: 60px;
     text-align: start;
-    padding-left: 20px;
+    padding: 0 20px;
     font-weight: 600;
     font-size: medium;
     box-shadow: 0px 5px 10px 3px #DEDEDE;
     position: relative;
     z-index: 100;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+}
+
+.input-header {
+    border-radius: 15px;
+    height: 28px;
+    vertical-align: middle;
+    margin-left: 6px;
+    background-color: rgb(246,246,246);
+}
+
+.input-header:focus {
+    background-color: #fff;
+    border-color: rgb(49, 49, 49);
+    box-shadow: none;
+}
+
+.input-header:hover {
+    border-color: rgb(27, 27, 27);
 }
 
 img {

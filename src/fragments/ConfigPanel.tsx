@@ -10,9 +10,9 @@ import ImageEditor from "./ImageEditor";
 import PositionEditor from "./PositionEditor";
 import ColorPicker from "./ColorPicker";
 import { EDITORS } from "../scripts/constants";
-import * as utils from "../scripts/utils"
+import * as utils from "../scripts/utils";
 import { ConfigPath } from "../scripts/utils";
-import * as React from 'react'
+import * as React from "react";
 
 const editorMapping = {
   [EDITORS.input]: InputEditor,
@@ -20,113 +20,135 @@ const editorMapping = {
   [EDITORS.select]: SelectEditor,
   [EDITORS.uploader]: ImageEditor,
   [EDITORS.position]: PositionEditor,
-  [EDITORS.colorPicker]: ColorPicker
-}
+  [EDITORS.colorPicker]: ColorPicker,
+};
 
-function getEachItem(item: ConfigPath){
+function getEachItem(item: ConfigPath) {
   return (
-        <Form.Item
-                shouldUpdate={(prevValues, curValues) => prevValues !== curValues}
-                label={item.config.name}
-                key={item.path.join("-")}
-                name={item.path}
-                rules={item.config.validateRules}
-                initialValue={item.config.defaultValue}
-              >
-                {
-                  React.createElement(editorMapping[item.config.type] as any, item.config.otherProps)
-                }
-        </Form.Item>
-  )
+    <Form.Item
+      shouldUpdate={(prevValues, curValues) => prevValues !== curValues}
+      label={item.config.name}
+      key={item.path.join("-")}
+      name={item.path}
+      rules={item.config.validateRules}
+      initialValue={item.config.defaultValue}
+    >
+      {React.createElement(
+        editorMapping[item.config.type] as any,
+        item.config.otherProps
+      )}
+    </Form.Item>
+  );
 }
 
-function flatConfigs(configs: [string, ConfigPath[]]){
-  const [groupName, items] = configs
-  const components = items.map(getEachItem)
-  const line = <Divider key={groupName} plain style={{color: "#999494", fontWeight: 'lighter'}}>{groupName}</Divider>
-  return [line, ...components]
+function flatConfigs(configs: [string, ConfigPath[]]) {
+  const [groupName, items] = configs;
+  const components = items.map(getEachItem);
+  const line = (
+    <Divider
+      key={groupName}
+      plain
+      style={{ color: "#999494", fontWeight: "lighter" }}
+    >
+      {groupName}
+    </Divider>
+  );
+  return [line, ...components];
 }
 const formItemLayout = {
-  labelCol: { span: 8},
-  wrapperCol: { span: 16, offset: 1},
-}
+  labelCol: { span: 8 },
+  wrapperCol: { span: 16, offset: 1 },
+};
 
-function useDebounceEffect(func: Function, deps: any[], debounceMs: number=300){
-  const timerRef = React.useRef<any>(null)
+function useDebounceEffect(
+  func: Function,
+  deps: any[],
+  debounceMs: number = 300
+) {
+  const timerRef = React.useRef<any>(null);
   useEffect(() => {
-    if(timerRef.current){
-      clearTimeout(timerRef.current)
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
     }
-    timerRef.current = setTimeout(func, debounceMs)
-  }, deps)
+    timerRef.current = setTimeout(func, debounceMs);
+  }, deps);
 }
 
-function ConfigPanel(props: {updateFn: any, component: Component, currentEditor: Record<string, any>}) {
+function ConfigPanel(props: {
+  updateFn: any;
+  component: Component;
+  currentEditor: Record<string, any>;
+}) {
   const { updateFn, component, currentEditor } = props;
-  const componentProps = component.props
+  const componentProps = component.props;
   const [form] = useForm();
 
   const onReset = () => {
-    form.resetFields()
-  }
+    form.resetFields();
+  };
 
   const outsizeProps = [
-      component.props.style.width, 
-      component.props.style.height,
-      component.props.drag?.position?.[0],
-      component.props.drag?.position?.[1]
-    ]
+    component.props.style.width,
+    component.props.style.height,
+    component.props.drag?.position?.[0],
+    component.props.drag?.position?.[1],
+  ];
 
   useEffect(() => {
-    form.resetFields()
-    form.setFieldsValue(componentProps)
-  }, [component.id])
+    form.resetFields();
+    form.setFieldsValue(componentProps);
+  }, [component.id]);
 
   useDebounceEffect(() => {
-    form.resetFields()
-    form.setFieldsValue(componentProps)
-  }, outsizeProps)
+    form.resetFields();
+    form.setFieldsValue(componentProps);
+  }, outsizeProps);
 
-  const submit = utils.debounce(form.submit, 300)
+  const submit = utils.debounce(form.submit, 300);
 
-  const flaternConfigs = utils.flatConfigs(currentEditor)
-  const groupedConfigs = Object.entries(utils.groupBy(flaternConfigs, (configPath) => configPath.config.group ?? ""))
-  const configItems = groupedConfigs.map(flatConfigs)
+  const flaternConfigs = utils.flatConfigs(currentEditor);
+  const groupedConfigs = Object.entries(
+    utils.groupBy(flaternConfigs, (configPath) => configPath.config.group ?? "")
+  );
+  const configItems = groupedConfigs.map(flatConfigs);
 
   return (
-    <Form 
+    <Form
       {...formItemLayout}
-      name="config-panel" 
-      form={form} 
+      name="config-panel"
+      form={form}
       initialValues={componentProps}
       onFinish={(values) => {
-        const newValues = utils.merge(component.props, values)
-        updateFn(newValues)
+        const newValues = utils.merge(component.props, values);
+        updateFn(newValues);
       }}
-      onFinishFailed={(err) => console.info('validate error', err)}
+      onFinishFailed={(err) => console.info("validate error", err)}
       onValuesChange={(e) => {
-        if(e.drag?.position){
-          form.submit()
-        }else{
-          submit()
+        if (e.url) {
+          const url = e.url;
+          utils
+            .adjustImage(e.url, componentProps.style.width as number)
+            .then((data) => {
+              updateFn(
+                utils.merge(component.props, {
+                  style: {
+                    width: data.componentWidth,
+                    height: data.realHeight,
+                  },
+                  url
+                })
+              );
+            });
+          return;
         }
-      }}    
+        if (e.drag?.position) {
+          form.submit();
+        } else {
+          submit();
+        }
+      }}
     >
-      {
-        configItems
-      }
-      {/* {keys.length !== 0 && (
-        <div>
-          <Row justify="space-between" align="middle" style={{padding: '0 40px'}} >
-            <Form.Item>
-              <Button style={{ margin: "0 4px" }} onClick={onReset}>还原</Button>
-            </Form.Item>
-            <Form.Item>
-              <Button htmlType="submit">保存</Button>
-            </Form.Item>
-          </Row>
-        </div>
-      )} */}
+      {configItems}
     </Form>
   );
 }

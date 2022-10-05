@@ -1,6 +1,9 @@
-import { Image} from "antd";
+import { BaseEditorProps } from '../types/types';
+// import { Image } from "antd";
 
-const BaseImg: React.FC<any> = (props: any) => {
+type BaseImgProps = BaseEditorProps;
+
+const BaseImg: React.FC<BaseImgProps> = (props: any) => {
   const groundUrl = props.url && `url(${props.url})`
   return (
       <div
@@ -11,7 +14,7 @@ const BaseImg: React.FC<any> = (props: any) => {
         {/* <Image
           style={{height: "100%", width: "100%"}}
           src={props.url}
-          preview={true}
+          preview={false}
         /> */}
       </div>
   )
@@ -20,7 +23,10 @@ const BaseImg: React.FC<any> = (props: any) => {
 BaseImg.defaultProps = {
   style: {
     width: 150,
-    height: 150 
+    height: 150
+  },
+  drag: {
+    keepRatio: true
   }
 }
 

@@ -20,6 +20,7 @@ interface Cprops extends Object {
     style: ComponentStyle,
     drag?: DragDataProps,
     imgUrl?: string,
+    url?: string,
     editor?: Record<string, any>
 }
 

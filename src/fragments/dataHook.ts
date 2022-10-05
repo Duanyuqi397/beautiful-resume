@@ -145,7 +145,6 @@ function useComponents(root: Omit<Component, 'id'|'children'>, handlers: Handler
             return component
         })
         .filter(component => component.id !== id)
-        console.info(newComponents)
         op.set(newComponents)
     }
 
