@@ -71,14 +71,13 @@ function CandidatePanel(props: CandidatePanelProps){
       throw new Error("can find render with type: " + type)
     }
     const props = merge(initProps, render.defaultProps ?? {})
-    const component = add({props, type, children: [], parent: 'root-container'})
+    const component = add({props, type})
     activite([component.id])
     return component;
   }
 
   function onDragEnd(componentName: string){
     const element = refs.current.get(componentName)
-    
     if(!element){
       return
     }

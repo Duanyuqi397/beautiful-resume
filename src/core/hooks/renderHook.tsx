@@ -4,13 +4,13 @@ import {
     Component,
 } from '../types'
 import { firstLower } from '../utils'
-import { useApp, useActives } from './appHook'
+import { useApp, useActives, useRoot } from './appHook'
 import BoxComponent from '../box/Box'
-
 
 function useRender(renderLookup: ComponentRedners){
     const { components, activite } = useApp()
     const { actives } = useActives()
+    const { root } = useRoot()
     const componentLookup = new Map(components.map(c => [c.id, c]))
     function render(component: Component): ReactElement{
         const children = component.children
@@ -33,13 +33,18 @@ function useRender(renderLookup: ComponentRedners){
         }
         const eventHandlers = {
             onClick(e: MouseEvent){
-                e.stopPropagation()
-                const activeIds = actives.map(c => c.id)
-                if(component.canActive === false){
-                    return
+                console.info(e.target, e.currentTarget)
+                if(component.id === root.id){
+                    activite([])
+                }else{
+                    const activeIds = actives.map(c => c.id)
+                    if(component.canActive === false){
+                        return
+                    }
+                    const existedIds = e.ctrlKey ? activeIds: []
+                    activite([...existedIds, component.id])
                 }
-                const existedIds = e.ctrlKey ? activeIds: []
-                activite([...existedIds, component.id])
+                e.stopPropagation()
             },
 
             onMouseDown(e: any){
@@ -57,7 +62,7 @@ function useRender(renderLookup: ComponentRedners){
             <BoxComponent {...component} props={props} inner={element} key={component.id}/>
         )
     }
-    return render
+    return () => render(root)
 }
 
 export { useRender }

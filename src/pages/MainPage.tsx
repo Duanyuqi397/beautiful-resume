@@ -18,68 +18,38 @@ import edit from "../assets/others/edit.svg";
 import dictionary from "../assets/others/dictionary.svg";
 import config from "../assets/others/config.svg";
 import exportPDF from "../scripts/exportPDF";
-import { useApp, useActives, useKeyboardEvent, useCopyPasteEvent } from '../core/hooks'
+import { 
+  useApp, 
+  useActives, 
+  useRoot, 
+  useKeyboardEvent, 
+  useCopyPasteEvent 
+} from '../core/hooks'
 import { useRender } from '../core/hooks/renderHook'
 
 //引入components下的组件
 const renders = importComponents(
   require.context("../components/", false, /[^.]+\.tsx/)
-);
-
-
-
-const defaultRoot: Component = {
-  type: "div",
-  id: "root-container",
-  props: {
-    id: "root-container",
-    position: [0, 0],
-    size: [842, 595],
-    style: {
-      backgroundColor: "white",
-      position: "relative",
-      margin: "auto",
-    },
-  },
-  children: [],
-  parent: '',
-  canActive: false,
-  canDrag: false
-}
+)
 
 
 export const MainPage = () => {
-  const {components, add, remove} = useApp()
+  const { add, remove } = useApp()
   const { actives } = useActives()
+  const { root } = useRoot()
   const render = useRender(renders)
-  const containerRef = useRef<HTMLElement>()
-  const [_, setRootRendered] = useState<boolean>(false)
+  const [container, setContainer] = useState<HTMLElement>()
 
   useEffect(() => {
-    add(defaultRoot)
-  }, [])
-
-  useEffect(() => {
-    if(!containerRef.current){
-      containerRef.current = document.getElementById("root-container") as HTMLElement
-      if(containerRef.current){
-        setRootRendered(true)
-      }
+    const htmlId = root.props.id
+    if(document.getElementById(htmlId)){
+      setContainer(document.getElementById(htmlId) as HTMLElement)
     }
   })
-
-  function renderAll(){
-    const root = components.filter(c => c.id === defaultRoot.id)
-    if(root.length > 0){
-      return render(root[0])
-    }
-    return undefined
-  }
 
   const [title,setTitle] = useState("我的简历")
 
   useKeyboardEvent(e => {
-    if (e.code === "Backspace") {
       const target = e.target as HTMLElement;
       if (
         target.contentEditable === "true" ||
@@ -90,7 +60,7 @@ export const MainPage = () => {
       }
       remove(actives.map(c => c.id))
     }
-  })
+  , "Backspace")
 
   useCopyPasteEvent('paste', (e) => {
     if (!e.clipboardData?.items) return;
@@ -107,7 +77,7 @@ export const MainPage = () => {
       const component = JSON.parse(componentStr) as Component;
       const [x, y] = component.props.position;
       component.props.position = [x + 10, y + 10];
-      add({...component, id: undefined})
+      add({...component, id: undefined}) // remove 
     })
     const imgInfo = imgData?.getAsFile();
     if (imgInfo) {
@@ -119,8 +89,6 @@ export const MainPage = () => {
           (data) => {
             add({
               type: "BaseImg",
-              children: [],
-              parent: "root-container",
               props: {
                 size: [data.componentWidth, data.realHeight],
                 position: [10, 10],
@@ -147,7 +115,7 @@ export const MainPage = () => {
   })
 
   function onExportPDF(){
-    containerRef.current && exportPDF(title,containerRef.current);
+    container && exportPDF(title, container);
   }
 
   return (
@@ -173,9 +141,9 @@ export const MainPage = () => {
               </div>
               <div className="component-list">
                 {
-                  containerRef.current ? (
+                  container ? (
                     <CandidatePanel 
-                      targetDom={containerRef.current} 
+                      targetDom={container} 
                       renders={renders} 
                     />
                   ): null
@@ -185,7 +153,7 @@ export const MainPage = () => {
           </Col>
           {/* 预览区域 */}
           <Col span={16}>
-            <div className="view-area block">{renderAll()}</div>
+            <div className="view-area block">{render()}</div>
           </Col>
           <Col span={4}>
             <div className="config-panel block">
@@ -200,7 +168,7 @@ export const MainPage = () => {
           </Col>
         </Row>
       </div>
-      <AuxiliaryLine container={containerRef.current}/>  
+      <AuxiliaryLine container={container}/>  
     </div>
   );
 };

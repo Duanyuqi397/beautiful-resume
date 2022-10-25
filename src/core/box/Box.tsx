@@ -84,9 +84,7 @@ const BoxComponent: React.FC<Component & {inner: React.ReactElement}> =  (compon
 
     let resizeBar: React.ReactNode = null
     const dom = domRef.current as HTMLElement
-    console.info(activeIds, props.id, dom, inDrag())
     if(activeIds.includes(props.id) && dom && (!inDrag())){
-        console.info("have resize bar")
         resizeBar = (
             <ResizeBar 
                 target={dom}
@@ -95,8 +93,6 @@ const BoxComponent: React.FC<Component & {inner: React.ReactElement}> =  (compon
                 onResizeStart={(e, direction) => startResize(props, e, direction)}
             />
         )
-    }else{
-        console.info("no resize bar for ", component.type)
     }
 
     const wrapperedChildren = React.cloneElement(

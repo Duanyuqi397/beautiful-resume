@@ -10,12 +10,33 @@ import type {
   MergePropsPayload,
   DeletePayload,
   Component,
+  RootComponent,
   SetStatePayload
 } from '../types'
 import { merge } from '../utils'
 
+const DEFAULT_ROOT: RootComponent = {
+  type: "div",
+  id: "__root-container__",
+  props: {
+    id: "root-container",
+    position: [0, 0],
+    size: [842, 595],
+    style: {
+      backgroundColor: "white",
+      position: "relative",
+      margin: "auto",
+    },
+  },
+  children: [],
+  parent: '',
+  canActive: false,
+  canDrag: false
+}
+
+
 const initialState = {
-    components: [],
+    components: [DEFAULT_ROOT],
     actives: []
 } as AppContext
 
@@ -97,6 +118,7 @@ const appSlice = createSlice({
     remove(state, action: PayloadAction<DeletePayload>){
       const componentMapping = new Map(state.components.map(c => [c.id, c]))
       const needDeleteIds = new Set(action.payload)
+      needDeleteIds.delete(DEFAULT_ROOT.id) // can remove root component
       const needKeep = (id: string) => !needDeleteIds.has(id)
       const parents = state.components
            .filter(c => needDeleteIds.has(c.id))
@@ -126,4 +148,5 @@ export const {
   batchSetProps,
   setState
 } = appSlice.actions
+export { DEFAULT_ROOT}
 export default appSlice.reducer

@@ -139,18 +139,20 @@ const ResizeBar: React.FC<ResizeBarProps> = (props) => {
                             }}
                             onMouseDown={(e) => {
                                 onResizeStart(e as any, prop.direction)
-                                //e.stopPropagation()
+                                e.stopPropagation()
                             }}
                             onMouseUp={(e) => {
                                 onResizeEnd(e as any, prop.direction)
                                 //e.stopPropagation()
                             }}
+                            onClick = {e => e.stopPropagation()}
                         />
                     )
                 })
             }
             {
                 <div
+                    onClick = {e => e.stopPropagation()}
                     key="resize-box"
                     style={{
                         borderStyle: "solid",

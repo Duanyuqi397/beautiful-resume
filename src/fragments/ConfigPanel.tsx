@@ -134,11 +134,6 @@ function ConfigPanel() {
           return;
         }
         submit()
-        // if (e.drag?.position) {
-        //   form.submit();
-        // } else {
-        //   submit();
-        // }
       }}
     >
       {configItems}

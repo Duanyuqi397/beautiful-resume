@@ -28,13 +28,25 @@ type DragAndResizeProps = BoxProps & {
     allowResizeDirection?: ResizeDirection[]
 }
 
-type Cprops = BoxProps & Record<string, any>
 
+type Cprops = BoxProps & Record<string, any>
 type ComponentState = "drag" | "resize" | "active" | undefined
 
 type Component = {
     id: string,
     props: Cprops,
+    type: string,
+    children: string[],
+    parent: string,
+    canActive?: boolean,
+    canDrag?: boolean,
+    canResize?: boolean,
+    state?: ComponentState
+}
+
+type RootComponent = {
+    id: string,
+    props: Cprops & {id: string},
     type: string,
     children: string[],
     parent: string,
@@ -86,6 +98,10 @@ type AuxiliaryLineProps = {
     color?: "string"
 }
 
+type OptionalPartial<T, K extends keyof T> = Omit<T, K> & {
+    [P in K]?: T[P]
+}
+ 
 
 export type {
     Position,
@@ -112,4 +128,6 @@ export type {
     AuxiliaryLineProps,
     SetStatePayload,
     ComponentState,
+    OptionalPartial,
+    RootComponent,
 }

@@ -7,6 +7,7 @@ import {
     batchMergeProps,
     batchSetProps,
     setState,
+    DEFAULT_ROOT,
 } from '../context/app'
 
 import { 
@@ -16,6 +17,8 @@ import {
     BatchMergePropsPayload, 
     BatchSetPropsPayload,
     ComponentState,
+    OptionalPartial,
+    RootComponent
 } from '../types'
 
 import { useSelector, useDispatch } from 'react-redux'
@@ -37,18 +40,20 @@ function useActives(){
      }
 }
 
+type PartialComponent = OptionalPartial<Component, 'parent'|'children'|'id'>
+
 function useApp(){
     const dispatch = useDispatch()
     const components = useAppSelector(state => state.components)
-    function addComponet(component: Omit<Component, 'id'> & {id?: string}){
+    function addComponet(partialComponent: PartialComponent){
+        const defaults = {parent: DEFAULT_ROOT.id, children: []}
+        let component = {...defaults, ...partialComponent}
         if(!component.id){
-            const c = {...component, id: uuidv4()} as Component
-            dispatch(add(c))
-            return c as Component
-        }else {
-            dispatch(add(component as Component))
-            return component as Component
+            component = {...component, id: uuidv4()}
         }
+        dispatch(add(component as Component))
+        console.info(component)
+        return component as Component
     }
     return {
         components,
@@ -63,8 +68,19 @@ function useApp(){
     }
 }
 
+function useRoot(){
+    const root = useAppSelector(state => state.components.find(c => c.id === DEFAULT_ROOT.id)) as RootComponent
+    if(!root){
+        throw Error("can't find root component")
+    }
+    return {
+        root
+    }
+}
+
 export {
     useActives,
     useApp,
+    useRoot,
 }
 

@@ -8,8 +8,12 @@ function useEvent<T extends Function>(callback: T): T{
     }, []) as unknown as T
 }
 
-function useKeyboardEvent(callback: (e: KeyboardEvent) => void){
-    const eventCallback = useEvent(callback)
+function useKeyboardEvent(callback: (e: KeyboardEvent) => void, code?: string){
+    const eventCallback = useEvent((event: KeyboardEvent) => {
+        if(!code || event.code === code){
+            callback(event)
+        }
+    })
     React.useEffect(() => {
         document.addEventListener("keydown", eventCallback);
         return () => document.removeEventListener("keydown", eventCallback)
