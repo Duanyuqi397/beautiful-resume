@@ -23,14 +23,14 @@ const ColorPicker: React.FC<ColorPickerProps> = (props) => {
                         props.onChange(rgba)
                         setColor(rgba)
                     }}
-                    color={color}
+                    color={props.value}
                 />
             }
             onOpenChange={(e) => setOpen(e)}
         >
             <div
                 style={{
-                    backgroundColor: color || '#e5e5e5',
+                    backgroundColor: props.value || '#e5e5e5',
                     width: '20px',
                     height: '20px',
                     border: '1px solid black'

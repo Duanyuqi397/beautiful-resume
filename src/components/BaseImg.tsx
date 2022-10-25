@@ -21,13 +21,8 @@ const BaseImg: React.FC<BaseImgProps> = (props: any) => {
 }
 
 BaseImg.defaultProps = {
-  style: {
-    width: 150,
-    height: 150
-  },
-  drag: {
-    keepRatio: true
-  }
+  size: [150, 150],
+  keepRatio: true
 }
 
 export default BaseImg;

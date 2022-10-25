@@ -1,163 +1,98 @@
 import { Row, Col, Button, Input } from "antd";
 import "./MainPage.css";
 import importComponents from "../scripts/importComponents";
-import { BaseEditorProps, Component, Cprops } from "../types/types";
-import { RenderEngine } from "../fragments/renderEngine";
-import ConfigPanel from "../fragments/ConfigPanel";
-import { useComponents, useMap } from "../fragments/dataHook";
+import { Component } from '../core/types'
+import ConfigPanel from "../fragments/ConfigPanel"
 import React, {
   useState,
   useLayoutEffect,
   useRef,
-  SyntheticEvent,
   useEffect,
-  RefObject,
 } from "react";
-import Draggable, { Position } from "../fragments/Draggable";
-import useEvent from "../fragments/eventHook";
-import { configEngine } from "../fragments/configEngine";
-import importConfigs from "../scripts/importConfigs";
-import importIcons from "../scripts/importIcons";
+
+
 import AuxiliaryLine from "../fragments/AuxiliaryLine";
-import useAlign from "../fragments/alignHook";
-import * as utils from "../scripts/utils";
+import CandidatePanel from "../fragments/CandidatePanel"
+import { adjustImage }  from "../scripts/utils";
 import edit from "../assets/others/edit.svg";
 import dictionary from "../assets/others/dictionary.svg";
 import config from "../assets/others/config.svg";
 import exportPDF from "../scripts/exportPDF";
+import { useApp, useActives, useKeyboardEvent, useCopyPasteEvent } from '../core/hooks'
+import { useRender } from '../core/hooks/renderHook'
 
 //引入components下的组件
-const components: Record<string, React.FC<any>> = importComponents(
+const renders = importComponents(
   require.context("../components/", false, /[^.]+\.tsx/)
 );
 
-//引入配置文件
-const configs: Record<string, any> = importConfigs(
-  require.context("../components/", false, /[^.]+\.ts$/)
-);
 
-//引入icon
-const icons: Record<string, any> = importIcons(
-  require.context("../assets/", false, /[^.]+\.svg$/)
-);
 
-const mapNames: Record<string, string> = {
-  BaseAvatar: "头像",
-  BaseButton: "按钮",
-  BaseUnorderedList: "无序列表",
-  BaseOrderedList: "有序列表",
-  BaseDivider: "分割线",
-  BaseLink: "链接",
-  BaseInput: "输入框",
-  BaseImg: "图片",
-  BaseTextArea: "文本编辑",
-  BaseContainer: "容器",
-};
-
-const render = new RenderEngine(components);
-
-const defaultRoot: Omit<Component, "id" | "children"> = {
+const defaultRoot: Component = {
   type: "div",
+  id: "root-container",
   props: {
     id: "root-container",
+    position: [0, 0],
+    size: [842, 595],
     style: {
       backgroundColor: "white",
       position: "relative",
-      height: "842px",
-      width: "595px",
       margin: "auto",
     },
   },
-};
-
-function contains(container: HTMLElement, element: HTMLElement) {
-  const containerBox = container.getBoundingClientRect();
-  const elementBox = element.getBoundingClientRect();
-  return (
-    containerBox.left < elementBox.left &&
-    containerBox.right > elementBox.right &&
-    containerBox.top < elementBox.top &&
-    containerBox.bottom > elementBox.bottom
-  );
+  children: [],
+  parent: '',
+  canActive: false,
+  canDrag: false
 }
 
-function offsetSet(container: HTMLElement, element: HTMLElement) {
-  const containerBox = container.getBoundingClientRect();
-  const elementBox = element.getBoundingClientRect();
-  return [
-    elementBox.left - containerBox.left,
-    elementBox.top - containerBox.top,
-  ];
-}
 
 export const MainPage = () => {
-  const [title,setTitle] = useState("我的简历");
-  const operation = configEngine(configs);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const position = useMap<number, [number, number]>(new Map());
-  const containerRef = useRef<HTMLElement | null>(null);
-  const nameRef = useRef<Map<number, HTMLElement | null>>(new Map());
-  const align = useAlign([0, 595, 0, 842]);
-  const [elements, op] = useComponents(defaultRoot, {
-    common: {
-      onMouseDown: useEvent((id, e) => {}),
-
-      onMouseUp: useEvent((id, e) => {}),
-
-      onClick: useEvent((id, e) => {
-        setActiveId(id);
-      }),
-
-      onPositionChange: useEvent((id, position) => {
-        op.mergePropsTo("drag", id, { position: position as any });
-        const component = op.find(id);
-        const size = {
-          width: utils.parseNumberFromStyle(component.props.style.width),
-          height: utils.parseNumberFromStyle(component.props.style.height),
-        };
-        align.calAlign(component.id, position as any, size);
-      }),
-
-      onSizeChange: useEvent((id, size) => {
-        op.mergePropsTo("style", id, size as any);
-      }),
-
-      onDragEnd: useEvent((id, position) => {
-        align.resetAlign();
-      }),
-
-      onResizeEnd: useEvent((id, size) => {
-        align.resetAlign();
-      }),
-    },
-  });
+  const {components, add, remove} = useApp()
+  const { actives } = useActives()
+  const render = useRender(renders)
+  const containerRef = useRef<HTMLElement>()
+  const [_, setRootRendered] = useState<boolean>(false)
 
   useEffect(() => {
-    function deleteComponent(e: KeyboardEvent) {
-      if (e.code === "Backspace") {
-        const target = e.target as HTMLElement;
-        if (
-          target.contentEditable === "true" ||
-          target.nodeName === "INPUT" ||
-          !activeId
-        ) {
-          return;
-        }
-        setActiveId(null);
-        op.remove(activeId);
-        align.removeAlign(activeId);
+    add(defaultRoot)
+  }, [])
+
+  useEffect(() => {
+    if(!containerRef.current){
+      containerRef.current = document.getElementById("root-container") as HTMLElement
+      if(containerRef.current){
+        setRootRendered(true)
       }
     }
-    document.addEventListener("keydown", deleteComponent);
-    return () => document.removeEventListener("keydown", deleteComponent);
-  }, [op, activeId]);
+  })
 
-  useEffect(() => {
-    const container = document.getElementById("root-container");
-    containerRef.current = container;
-  }, []);
+  function renderAll(){
+    const root = components.filter(c => c.id === defaultRoot.id)
+    if(root.length > 0){
+      return render(root[0])
+    }
+    return undefined
+  }
 
-  const createComponentWhenPaste = useEvent((e: ClipboardEvent) => {
+  const [title,setTitle] = useState("我的简历")
+
+  useKeyboardEvent(e => {
+    if (e.code === "Backspace") {
+      const target = e.target as HTMLElement;
+      if (
+        target.contentEditable === "true" ||
+        target.nodeName === "INPUT" ||
+        actives.length < 1
+      ) {
+        return;
+      }
+      remove(actives.map(c => c.id))
+    }
+  })
+
+  useCopyPasteEvent('paste', (e) => {
     if (!e.clipboardData?.items) return;
     const data = e.clipboardData.items;
     const imgData = Array.from(data).find(
@@ -167,148 +102,56 @@ export const MainPage = () => {
     const componentInfo = Array.from(data).find(
       (item) => item.type === "text/plain"
     )
+    
     componentInfo?.getAsString((componentStr) => {
-      const component = JSON.parse(componentStr);
-      const [x, y] = component.props.drag.position;
-      delete component.id;
-      delete component.children;
-      component.props.drag.position = [x + 10, y + 10];
-      addImgComponent(component.type, 0, 0, component.props);
+      const component = JSON.parse(componentStr) as Component;
+      const [x, y] = component.props.position;
+      component.props.position = [x + 10, y + 10];
+      add({...component, id: undefined})
     })
-
     const imgInfo = imgData?.getAsFile();
     if (imgInfo) {
       const url = URL.createObjectURL(imgInfo);
-      if(components['BaseImg'].defaultProps){
-        const componentWidth = components['BaseImg'].defaultProps.style.width;
-        utils.adjustImage(url, componentWidth).then(
+      const imageRender = renders.get("BaseImg") as any
+      if(imageRender.defaultProps){
+        const [componentWidth] = imageRender.defaultProps.size;
+        adjustImage(url, componentWidth).then(
           (data) => {
-            const defaultProps = {
-              style: {
-                width: data.componentWidth,
-                height: data.realHeight
-              },
-              drag: {
-                keepRatio: true
+            add({
+              type: "BaseImg",
+              children: [],
+              parent: "root-container",
+              props: {
+                size: [data.componentWidth, data.realHeight],
+                position: [10, 10],
+                keepRatio: true,
+                style: {
+                  position: 'absolute'
+                },
+                url
               }
-            };
-            addImgComponent("BaseImg", 0, 0, defaultProps, url);
+            })
           }
         )
       }
     }
-  });
-
-  const copyComponent = useEvent((e: ClipboardEvent) => {
-    if(!activeId){
-      return
-    }
-    e.clipboardData?.setData('text/plain', JSON.stringify(op.find(activeId)));
-    e.preventDefault();
   })
 
-  useEffect(() => {
-    document.addEventListener("copy",copyComponent);
-    return () => document.removeEventListener("copy",copyComponent);
-  },[])
-
-  useEffect(() => {
-    document.addEventListener("paste", createComponentWhenPaste);
-    return () => document.removeEventListener("paste", createComponentWhenPaste);
-  }, []);
-
-  function addImgComponent(type: string, left: number, top: number, defaultProps: Partial<BaseEditorProps>, url?: string) {
-    const initProps: Cprops = {
-      style: { left: 0, top: 0, position: "absolute", width: 0, height: 0 },
-      drag: {
-        canResize: true,
-        canDrag: true,
-        position: [left, top],
-        disableArea: 0,
-      },
-      url,
-    };
-
-    const render = components[type];
-    if (!render) {
-      throw new Error("can find render with type: " + type);
+  useCopyPasteEvent('copy', e => {
+    if(actives.length !== 1){
+      return;
     }
-    const props = utils.merge(initProps, defaultProps);
-    const component = op.add(type, props);
-    return component;
-  }
-
-  function addComponent(type: string, left: number, top: number) {
-    const initProps: Cprops = {
-      style: { left: 0, top: 0, position: "absolute", width: 0, height: 0 },
-      drag: {
-        canResize: true,
-        canDrag: true,
-        position: [left, top],
-        disableArea: 0,
-      }
-    };
-
-    const render = components[type];
-    if (!render) {
-      throw new Error("can find render with type: " + type);
-    }
-    const props = utils.merge(initProps, render.defaultProps ?? {});
-    const component = op.add(type, props);
-    return component;
-  }
+    const activeComponent = actives[0]
+    e.clipboardData?.setData('text/plain', JSON.stringify(activeComponent));
+    e.preventDefault();
+  })
 
   function onExportPDF(){
     containerRef.current && exportPDF(title,containerRef.current);
   }
 
-  function onDragEnd(index: number, type: string) {
-    const element = nameRef.current.get(index) || null;
-    if (element === null || containerRef.current === null) {
-      return;
-    }
-
-    const containByContainer = contains(containerRef.current, element);
-    if (containByContainer) {
-      const [left, top] = offsetSet(containerRef.current, element);
-      const gridLeft = Math.floor(left);
-      const gridTop = Math.floor(top);
-      const newComponent = addComponent(type, gridLeft, gridTop);
-      setActiveId(newComponent.id);
-      const width = utils.parseNumberFromStyle(newComponent.props.style.width);
-      const height = utils.parseNumberFromStyle(
-        newComponent.props.style.height
-      );
-      align.setPosition(newComponent.id, [
-        gridLeft,
-        gridLeft + width,
-        gridTop,
-        gridTop + height,
-      ]);
-    }
-    position.set(index, [0, 0]);
-  }
-
-  function configUpdateFn(newProps: any) {
-    if (activeId) {
-      const component = op.find(activeId);
-      const [oldX, oldY] = component.props.drag?.position || [NaN, NaN];
-      const [newX, newY] = newProps.drag.position || [NaN, NaN];
-
-      if (oldX !== newX || oldY !== newY) {
-        const size = {
-          width: utils.parseNumberFromStyle(component.props.style.width),
-          height: utils.parseNumberFromStyle(component.props.style.height),
-        };
-        align.calAlign(activeId, [newX, newY], size);
-      }
-      op.mergeProps(activeId, newProps);
-    }
-  }
-
   return (
     <div>
-      {align.hasAlign() ? <AuxiliaryLine lines={align.alignPositions} /> : null}
       <div className="header">
           <div className="header-title">
             <img src={edit} alt="" />
@@ -329,36 +172,20 @@ export const MainPage = () => {
                 基础组件
               </div>
               <div className="component-list">
-                {Object.keys(components).map((item, index) => {
-                  return (
-                    <Draggable
-                      position={position.get(index) || [0, 0]}
-                      onPositionChange={([x, y]) => position.set(index, [x, y])}
-                      onDragEnd={() => onDragEnd(index, item)}
-                      key={index}
-                      disableArea={10}
-                    >
-                      <div
-                        ref={(r) => nameRef.current.set(index, r)}
-                        className="component-item"
-                        key={index}
-                      >
-                        <img
-                          src={icons[mapNames[item]]}
-                          alt=""
-                          draggable={false}
-                        />
-                        {mapNames[item]}
-                      </div>
-                    </Draggable>
-                  );
-                })}
+                {
+                  containerRef.current ? (
+                    <CandidatePanel 
+                      targetDom={containerRef.current} 
+                      renders={renders} 
+                    />
+                  ): null
+                }
               </div>
             </div>
           </Col>
           {/* 预览区域 */}
           <Col span={16}>
-            <div className="view-area block">{render.render(op.getMap())}</div>
+            <div className="view-area block">{renderAll()}</div>
           </Col>
           <Col span={4}>
             <div className="config-panel block">
@@ -367,20 +194,13 @@ export const MainPage = () => {
                 属性配置
               </div>
               <div className="config">
-                {activeId && (
-                  <ConfigPanel
-                    currentEditor={
-                      operation.getEditor(op.find(activeId).type).config
-                    }
-                    component={op.find(activeId)}
-                    updateFn={configUpdateFn}
-                  />
-                )}
+                <ConfigPanel/>
               </div>
             </div>
           </Col>
         </Row>
       </div>
+      <AuxiliaryLine container={containerRef.current}/>  
     </div>
   );
 };

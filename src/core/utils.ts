@@ -113,6 +113,10 @@ function adjustImage(url: string, componentWidth: number) {
 
 const Identify = <T>(x: T) => x
 
+function firstLower(str: string): boolean{
+    return str.length === 0 ? false: str.charCodeAt(0) > 96
+}
+
 export {
     parseNumberFromStyle,
     removeKeys,
@@ -122,7 +126,8 @@ export {
     parseBorder,
     groupBy,
     Identify,
-    adjustImage
+    adjustImage,
+    firstLower
 }
 
 export type {

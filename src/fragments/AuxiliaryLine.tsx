@@ -1,10 +1,7 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-type AuxiliaryLineProps = {
-    axis: "x"|"y",
-    offset: number,
-    color?: "string"
-}
+import { AuxiliaryLineProps } from '../core/types/'
+import { useAlign } from '../core/hooks'
 
 function Line(props: {style: React.CSSProperties}){
     return (
@@ -31,10 +28,11 @@ function makeLine(line: AuxiliaryLineProps, key: number){
     }
 }
 
-const AuxiliaryLine: React.FC<{lines: AuxiliaryLineProps[]}> = (props) => {
-    const lineElements = props.lines.map(makeLine)
-    return ReactDOM.createPortal(lineElements, document.getElementById("root-container") as HTMLElement)
+const AuxiliaryLine: React.FC<{container: HTMLElement | undefined}> = (props) => {
+    const getAligns = useAlign()
+    const lines = getAligns()
+    const lineElements = lines.map(makeLine)
+    return props.container ? ReactDOM.createPortal(lineElements, props.container) : null
 }
 
 export default AuxiliaryLine
-export type {AuxiliaryLineProps}

@@ -1,8 +1,6 @@
 import { Button, Divider, Form, Input, Row } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { useEffect } from "react";
-import { Component, Cprops, EditorType } from "../types/types";
-import { getEditableProps, mergeProps } from "./configEngine";
 import RichText from "./RichText";
 import InputEditor from "./InputEditor";
 import SelectEditor from "./SelectEditor";
@@ -13,6 +11,12 @@ import { EDITORS } from "../scripts/constants";
 import * as utils from "../scripts/utils";
 import { ConfigPath } from "../scripts/utils";
 import * as React from "react";
+import importConfigs from "../scripts/importConfigs";
+import { useActives } from "../core/hooks"
+//引入配置文件
+const configs: Record<string, any> = importConfigs(
+  require.context("../components/", false, /[^.]+\.ts$/)
+);
 
 const editorMapping = {
   [EDITORS.input]: InputEditor,
@@ -27,7 +31,7 @@ function getEachItem(item: ConfigPath) {
   return (
     <Form.Item
       shouldUpdate={(prevValues, curValues) => prevValues !== curValues}
-      label={item.config.name}
+      label={item.config.name} 
       key={item.path.join("-")}
       name={item.path}
       rules={item.config.validateRules}
@@ -74,39 +78,34 @@ function useDebounceEffect(
   }, deps);
 }
 
-function ConfigPanel(props: {
-  updateFn: any;
-  component: Component;
-  currentEditor: Record<string, any>;
-}) {
-  const { updateFn, component, currentEditor } = props;
-  const componentProps = component.props;
-  const [form] = useForm();
-
-  const onReset = () => {
-    form.resetFields();
-  };
-
-  const outsizeProps = [
-    component.props.style.width,
-    component.props.style.height,
-    component.props.drag?.position?.[0],
-    component.props.drag?.position?.[1],
-  ];
+function ConfigPanel() {
+  const { actives, merge } = useActives()
+  const [form] = useForm()
+  const activeComponent = actives.length === 1 ? actives[0] : null
+  const componentProps = activeComponent?.props
 
   useEffect(() => {
     form.resetFields();
     form.setFieldsValue(componentProps);
-  }, [component.id]);
+  }, [activeComponent?.id]);
 
-  useDebounceEffect(() => {
-    form.resetFields();
-    form.setFieldsValue(componentProps);
-  }, outsizeProps);
+  if(!componentProps){
+    return <></>
+  }
+  
+  
+  const currentEditor = Object.values(configs).find(item => item.component === activeComponent.type)
+  if(!currentEditor){
+    throw new Error(`no editor config found for ${activeComponent.type}`)
+  }
+  // useDebounceEffect(() => {
+  //   form.resetFields();
+  //   form.setFieldsValue(componentProps);
+  // }, outsizeProps);
 
   const submit = utils.debounce(form.submit, 300);
 
-  const flaternConfigs = utils.flatConfigs(currentEditor);
+  const flaternConfigs = utils.flatConfigs(currentEditor.config);
   const groupedConfigs = Object.entries(
     utils.groupBy(flaternConfigs, (configPath) => configPath.config.group ?? "")
   );
@@ -118,34 +117,28 @@ function ConfigPanel(props: {
       name="config-panel"
       form={form}
       initialValues={componentProps}
-      onFinish={(values) => {
-        const newValues = utils.merge(component.props, values);
-        updateFn(newValues);
-      }}
+      onFinish={merge}
       onFinishFailed={(err) => console.info("validate error", err)}
       onValuesChange={(e) => {
         if (e.url) {
           const url = e.url;
+          const [initWidht] = componentProps.size
           utils
-            .adjustImage(e.url, componentProps.style.width as number)
+            .adjustImage(e.url, initWidht)
             .then((data) => {
-              updateFn(
-                utils.merge(component.props, {
-                  style: {
-                    width: data.componentWidth,
-                    height: data.realHeight,
-                  },
+              merge({
+                  size: [data.componentWidth, data.realHeight],
                   url
                 })
-              );
             });
           return;
         }
-        if (e.drag?.position) {
-          form.submit();
-        } else {
-          submit();
-        }
+        submit()
+        // if (e.drag?.position) {
+        //   form.submit();
+        // } else {
+        //   submit();
+        // }
       }}
     >
       {configItems}

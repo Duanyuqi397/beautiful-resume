@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 
-const  BaseContainer: React.FC<any> = (props) => {
+const BaseContainer: React.FC<any> = (props) => {
     const ref = React.useRef<HTMLDivElement>(null)
     const backgroundColor = props.style.backgroundColor || "rgba(0, 0, 0, 0.1)"
     return (
@@ -19,10 +19,7 @@ const  BaseContainer: React.FC<any> = (props) => {
 }
 
 BaseContainer.defaultProps = {
-    style: {
-        width: 150,
-        height: 150
-    }
+   size: [150, 150]
 }
 
 export default BaseContainer;

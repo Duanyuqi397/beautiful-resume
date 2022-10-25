@@ -38,10 +38,7 @@ const  BaseTextArea: React.FC<any> = (props) => {
 }
 
 BaseTextArea.defaultProps = {
-    style: {
-        width: 150,
-        height: 50
-    },
+    size: [150, 150],
     content: {
         html: "",
         text: ""

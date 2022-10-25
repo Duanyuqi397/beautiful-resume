@@ -3,13 +3,13 @@ import {Rule} from "antd/lib/form"
 import { CSSProperties } from "react";
 
 const EDITORS = {
-     input: "Input" as EditorType,
-     richText: "RichText" as EditorType,
-     select: "Select" as EditorType,
-     uploader: "Uploader" as EditorType,
-     position: "position" as EditorType,
-     colorPicker: "colorPicker" as EditorType,
-     image: "image" as EditorType
+    input: "Input" as EditorType,
+    richText: "RichText" as EditorType,
+    select: "Select" as EditorType,
+    uploader: "Uploader" as EditorType,
+    position: "position" as EditorType,
+    colorPicker: "colorPicker" as EditorType,
+    image: "image" as EditorType
 }
 
 const Validtors = {
@@ -106,26 +106,22 @@ const BASE_EDITOR_CONFIG: {
     style: {
         [P in keyof CSSProperties]: EditorProps
     },
-    drag: {
-        position: EditorProps
-    }
+    //position: EditorProps
 } = {
     style: {
         borderRadius: FIELDS.borderRadius,
         zIndex: FIELDS.zIndex,
-        width: FIELDS.width,
-        height: FIELDS.height,
+        // width: FIELDS.width,
+        // height: FIELDS.height,
         backgroundColor: FIELDS.backgroundColor,
         borderWidth: FIELDS.borderWidth,
         borderStyle: FIELDS.borderStyle, 
     },
-    drag: {
-        position: EditorProps.fromObject({
-            name: "位置",
-            group: "位置",
-            type: EDITORS.position
-        })
-    }
+    // position: EditorProps.fromObject({
+    //     name: "位置",
+    //     group: "位置",
+    //     type: EDITORS.position
+    // })
 }
 
 export {
