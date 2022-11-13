@@ -12,7 +12,7 @@ import * as utils from "../scripts/utils";
 import { ConfigPath } from "../scripts/utils";
 import * as React from "react";
 import importConfigs from "../scripts/importConfigs";
-import { useActives } from "../core/hooks"
+import { useActives, useApp } from "../core/hooks"
 //引入配置文件
 const configs: Record<string, any> = importConfigs(
   require.context("../components/", false, /[^.]+\.ts$/)
@@ -79,7 +79,8 @@ function useDebounceEffect(
 }
 
 function ConfigPanel() {
-  const { actives, merge } = useActives()
+  const { actives } = useActives()
+  const { merge } = useApp()
   const [form] = useForm()
   const activeComponent = actives.length === 1 ? actives[0] : null
   const componentProps = activeComponent?.props
@@ -117,7 +118,7 @@ function ConfigPanel() {
       name="config-panel"
       form={form}
       initialValues={componentProps}
-      onFinish={merge}
+      onFinish={(values) => merge(activeComponent.id, values)}
       onFinishFailed={(err) => console.info("validate error", err)}
       onValuesChange={(e) => {
         if (e.url) {
@@ -126,10 +127,13 @@ function ConfigPanel() {
           utils
             .adjustImage(e.url, initWidht)
             .then((data) => {
-              merge({
+              merge(
+                activeComponent.id,
+                {
                   size: [data.componentWidth, data.realHeight],
                   url
-                })
+                }
+              )
             });
           return;
         }

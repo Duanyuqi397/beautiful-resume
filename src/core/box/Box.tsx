@@ -7,10 +7,9 @@ import { getDragStyle } from './styleUtils'
 import ResizeBar from './ResizeBar'
 
 const BoxComponent: React.FC<Component & {inner: React.ReactElement}> =  (component) => {
-    const { actives } = useActives()
+    const {actives, activeIds} = useActives()
     const { batchMerge, merge, setState } = useApp()
     const domRef = React.useRef<HTMLElement>()
-    const activeIds = actives.map(c => c.id)
     const {
         id: componentId,
         props,
@@ -20,10 +19,8 @@ const BoxComponent: React.FC<Component & {inner: React.ReactElement}> =  (compon
     } = component
     const [startDrag, inDrag] = useDrag(
         positions => {
-            if(actives.length > 1){
-                const newPositions = Object.fromEntries(
-                    actives.map((c, index) => [c.id, {position: positions[index]}])
-                )
+            if(activeIds.length > 1){
+                const newPositions = activeIds.map((componentId, index) => [componentId, {position: positions[index]}] as const)
                 batchMerge(newPositions)
                 setState(activeIds, "drag")
             }else{
@@ -33,7 +30,7 @@ const BoxComponent: React.FC<Component & {inner: React.ReactElement}> =  (compon
         },
 
         positions => {
-            if(actives.length > 1){
+            if(activeIds.length > 1){
                 setState(activeIds, undefined)
             }else{
                 setState([componentId], undefined)

@@ -117,6 +117,16 @@ function firstLower(str: string): boolean{
     return str.length === 0 ? false: str.charCodeAt(0) > 96
 }
 
+function toArray<T>(v: T | (T[])): T[]{
+    return Array.isArray(v) ? v: [v]
+}
+
+function toLookup<T, K extends string|number|Symbol>(array: T[], key: (e: T) => K): Map<K, T>{
+    const res = new Map<K, T>()
+    array.forEach(i => res.set(key(i), i))
+    return res
+}
+
 export {
     parseNumberFromStyle,
     removeKeys,
@@ -127,7 +137,9 @@ export {
     groupBy,
     Identify,
     adjustImage,
-    firstLower
+    firstLower,
+    toArray,
+    toLookup,
 }
 
 export type {

@@ -26,6 +26,7 @@ import {
   useCopyPasteEvent 
 } from '../core/hooks'
 import { useRender } from '../core/hooks/renderHook'
+import ToolBar from '../fragments/ToolBar'
 
 //引入components下的组件
 const renders = importComponents(
@@ -59,15 +60,14 @@ export const MainPage = () => {
         return;
       }
       remove(actives.map(c => c.id))
-    }
-  , "Backspace")
+    }, "Backspace")
 
   useCopyPasteEvent('paste', (e) => {
     if (!e.clipboardData?.items) return;
     const data = e.clipboardData.items;
     const imgData = Array.from(data).find(
       (item) => item.type === "image/png"
-    );
+    )
 
     const componentInfo = Array.from(data).find(
       (item) => item.type === "text/plain"
@@ -130,6 +130,9 @@ export const MainPage = () => {
             />
           </div>
         <Button onClick={onExportPDF}>导出PDF</Button>
+      </div>
+      <div className="toolbar">
+        <ToolBar/>
       </div>
       <div>
         <Row>

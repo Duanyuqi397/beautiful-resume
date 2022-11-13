@@ -63,28 +63,15 @@ type AppContext = {
     actives: string[]
 }
 
-type SetPropsPayload = {
-    props: Cprops,
-    ids: string[]
-}
+type SetPropsPayload = readonly [Component['id'], Cprops]
 
-type MergePropsPayload = {
-    props: Partial<Cprops>,
-    ids: string[]
-}
+type MergePropsPayload = readonly [Component['id'], Partial<Component['props']>]
 
 type SetStatePayload = {
     ids: string[],
     state: ComponentState
 }
 
-type BatchSetPropsPayload = {
-    [ids: string]: Cprops
-}
-
-type BatchMergePropsPayload = {
-    [ids: string]: Partial<Cprops>
-}
 
 type ActivatePayload = string[]
 
@@ -123,8 +110,6 @@ export type {
     DeactivatePayload,
     DeletePayload,
     ComponentRedners,
-    BatchMergePropsPayload,
-    BatchSetPropsPayload,
     AuxiliaryLineProps,
     SetStatePayload,
     ComponentState,

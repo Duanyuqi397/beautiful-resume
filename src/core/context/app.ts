@@ -5,15 +5,11 @@ import type {
   ActivatePayload,
   DeactivatePayload,
   SetPropsPayload,
-  BatchMergePropsPayload,
-  BatchSetPropsPayload,
-  MergePropsPayload,
   DeletePayload,
   Component,
   RootComponent,
   SetStatePayload
 } from '../types'
-import { merge } from '../utils'
 
 const DEFAULT_ROOT: RootComponent = {
   type: "div",
@@ -55,44 +51,18 @@ const appSlice = createSlice({
       })
     },
 
-    batchSetProps(state, action: PayloadAction<BatchSetPropsPayload>){
+    setProps(state, action: PayloadAction<SetPropsPayload[]>) {
       const componentMapping = new Map(state.components.map(c => [c.id, c]))
-      Object.entries(action.payload).forEach(([id, props]) => {
+      for(const [id, props] of action.payload){
         const component = componentMapping.get(id)
         if(component){
           component.props = props
-        }
-      })
+        }else{
+          console.warn(`component ${id} not found`)
+        } 
+      }
     },
 
-    batchMergeProps(state, action: PayloadAction<BatchMergePropsPayload>){
-      const componentMapping = new Map(state.components.map(c => [c.id, c]))
-      Object.entries(action.payload).forEach(([id, props]) => {
-        const component = componentMapping.get(id)
-        if(component){
-          component.props = merge(component.props, props)
-        }
-      })
-    },
-
-    setProps(state, action: PayloadAction<SetPropsPayload>) {
-      const {ids, props} = action.payload
-      state.components.forEach(c => {
-        if(ids.includes(c.id)){
-          c.props = props
-        }
-      })
-    },
-    
-    mergeProps(state, action: PayloadAction<MergePropsPayload>){
-      const {ids, props: partialProps} = action.payload
-      state.components.forEach(c => {
-        if(ids.includes(c.id)){
-          c.props = merge(c.props, partialProps)
-        }
-      })
-    },
-    
     activite(state, action: PayloadAction<ActivatePayload>){
       state.actives = action.payload
     },
@@ -140,13 +110,10 @@ const appSlice = createSlice({
 export const { 
   add, 
   setProps, 
-  mergeProps, 
   activite, 
   deactivite, 
   remove,
-  batchMergeProps,
-  batchSetProps,
-  setState
+  setState,
 } = appSlice.actions
 export { DEFAULT_ROOT}
 export default appSlice.reducer
