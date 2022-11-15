@@ -129,10 +129,8 @@ export const MainPage = () => {
               // onPressEnter={e => setTitle(e.target)}
             />
           </div>
+          <ToolBar/>
         <Button onClick={onExportPDF}>导出PDF</Button>
-      </div>
-      <div className="toolbar">
-        <ToolBar/>
       </div>
       <div>
         <Row>
