@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Col, Row, Button, MenuProps, Menu, Dropdown, Space } from 'antd';
-import { 
+import Icon, { 
     UndoOutlined, 
     RedoOutlined,
     AlignLeftOutlined,
@@ -18,6 +18,8 @@ import {
     BorderTopOutlined,
     BorderBottomOutlined,
 } from '@ant-design/icons'
+
+import LeftAlign from '../assets/leftAlign.svg'
 import { 
     useHistory,
     useActives,
@@ -25,6 +27,32 @@ import {
     useRoot,
 } from '../core/hooks/appHook'
 import { useKeyboardEvent } from '../core/hooks/eventHook'
+
+const LeftAlignIcon: React.FC = (props) => (
+    <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1633" {...props}>
+        <path d="M343.04 799.004444v-56.888888h227.555556v56.888888z" p-id="1634"></path><path d="M302.648889 810.951111l-40.248889-40.248889 120.689778-120.689778 40.220444 40.248889z" p-id="1635"></path><path d="M262.599111 770.275556l40.220445-40.220445 120.689777 120.689778-40.248889 40.220444zM262.542222 379.164444h568.888889v227.555556h-568.888889zM262.542222 151.608889h341.333334v170.666667h-341.333334zM148.764444 94.72h56.888889v853.333333h-56.888889z" p-id="1636"></path>
+    </svg>
+)
+
+const RightAlignIcon: React.FC = (props) => (
+    <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1654" {...props}><path d="M398.222222 799.004444v-56.888888h227.555556v56.888888z" p-id="1655"></path><path d="M545.28 689.777778l40.220444-40.192 120.661334 120.661333-40.220445 40.248889z" p-id="1656"></path><path d="M585.443556 891.164444l-40.220445-40.248888 120.661333-120.661334 40.248889 40.220445zM705.991111 606.72h-568.888889v-227.555556h568.888889zM705.991111 322.275556h-341.333333v-170.666667h341.333333zM819.768889 948.053333h-56.888889v-853.333333h56.888889z" p-id="1657"></path></svg>
+)
+
+const CenterXAlignIcon: React.FC = (props) => (
+    <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1814" {...props}><path d="M222.72 521.386667h568.888889v227.555555h-568.888889zM336.497778 293.831111h341.333333v170.666667h-341.333333z" p-id="1815"></path><path d="M478.72 151.608889h56.888889v739.555555h-56.888889z" p-id="1816"></path></svg>
+)
+
+const TopAlignIcon: React.FC = (props) => (
+    <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1973" {...props}><path d="M777.955556 601.884444h-56.888889v-227.555555h56.888889z" p-id="1974"></path><path d="M668.814222 454.684444L628.622222 414.435556l120.689778-120.689778 40.220444 40.220444z" p-id="1975"></path><path d="M869.944889 414.663111l-40.248889 40.220445-120.661333-120.661334 40.220444-40.248889zM585.671111 293.831111v568.888889h-227.555555v-568.888889zM301.226667 293.831111v341.333333h-170.666667v-341.333333zM927.004444 180.053333v56.888889h-853.333333v-56.888889z" p-id="1976"></path></svg>
+)
+
+const CenterYAlignIcon: React.FC = (props) => (
+    <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2289" {...props}><path d="M486.968889 805.831111v-568.888889h227.555555v568.888889zM259.413333 692.053333v-341.333333h170.666667v341.333333z" p-id="2290"></path><path d="M117.191111 549.831111v-56.888889h739.555556v56.888889z" p-id="2291"></path></svg>)
+
+const BottomAlignIcon: React.FC = (props) => (
+    <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2448" {...props}><path d="M764.017778 668.728889h-56.888889v-227.555556h56.888889z" p-id="2449"></path><path d="M775.964444 708.807111l-40.220444 40.220445-120.689778-120.689778 40.220445-40.220445z" p-id="2450"></path><path d="M735.573333 749.198222l-40.220444-40.248889 120.661333-120.661333 40.248889 40.220444zM344.177778 748.942222v-568.888889h227.555555v568.888889zM116.622222 748.942222v-341.333333h170.666667v341.333333zM59.733333 862.72v-56.888889h853.333334v56.888889z" p-id="2451"></path></svg>)
+
+
 
 const xPositionMenuItems = [
     {
@@ -66,17 +94,17 @@ const xAlignMenuItems = [
     {
       label: '左对齐',
       key: 'left',
-      icon: <VerticalRightOutlined />,
+      icon: <Icon component={LeftAlignIcon}/>,
     },
     {
       label: '居中对齐',
       key: 'center',
-      icon: <BorderVerticleOutlined />,
+      icon: <Icon component={CenterXAlignIcon}/>,
     },
     {
       label: '右对齐',
       key: 'right',
-      icon: <VerticalLeftOutlined />,
+      icon: <Icon component={RightAlignIcon}/>,
     },
 ]
 
@@ -84,17 +112,17 @@ const yAlignMenuItems = [
     {
       label: '顶端对齐',
       key: 'top',
-      icon: <BorderTopOutlined />,
+      icon: <Icon component={TopAlignIcon}/>,
     },
     {
       label: '居中对齐',
       key: 'center',
-      icon: <BorderVerticleOutlined />,
+      icon: <Icon component={CenterYAlignIcon}/>,
     },
     {
       label: '底部对齐',
       key: 'bottom',
-      icon: <BorderBottomOutlined />,
+      icon: <Icon component={BottomAlignIcon}/>,
     },
 ]
 const ToolBar: React.FC<any> = (porps) => {
@@ -197,8 +225,6 @@ const ToolBar: React.FC<any> = (porps) => {
         batchMerge(actives.slice(1).map(c => [c.id, {position: [c.props.position[0], alignHeight - c.props.size[1]]}]))
     }
 
-
-
     function fullWidth(){
         batchMerge(actives.map(c => [c.id, {position: [0, c.props.position[1]], size: [root.props.size[0], c.props.size[1]]}]))
     }
@@ -263,13 +289,13 @@ const ToolBar: React.FC<any> = (porps) => {
 
                 <Col>
                     <Dropdown disabled={!activeMoreThanOne} overlay={<Menu items={xAlignMenuItems} onClick={e => xAlignPosition(e.key)} />} >
-                        <Button icon={<VerticalRightOutlined />} size="large" type="text"></Button>
+                        <Button icon={<Icon component={LeftAlignIcon}/>} size="large" type="text"></Button>
                     </Dropdown >
                 </Col>
 
                 <Col>
                     <Dropdown disabled={!activeMoreThanOne} overlay={<Menu items={yAlignMenuItems} onClick={e => yAlignPosition(e.key)} />} >
-                        <Button icon={<BorderBottomOutlined />} size="large" type="text"></Button>
+                        <Button icon={<Icon component={TopAlignIcon}/>} size="large" type="text"></Button>
                     </Dropdown >
                 </Col>
  
