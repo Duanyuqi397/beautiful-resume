@@ -1,32 +1,49 @@
 import * as React from 'react'
-import { Col, Row, Button, MenuProps, Menu, Dropdown, Space } from 'antd';
+import { Col, 
+    Row, 
+    Button, 
+    Menu, 
+    Dropdown,
+    Modal,
+    Input,
+    message,
+    Upload,
+} from 'antd';
+
+import type { UploadChangeParam, UploadFile, RcFile } from 'antd/es/upload';
+
 import Icon, { 
     UndoOutlined, 
     RedoOutlined,
     AlignLeftOutlined,
     AlignCenterOutlined,
     AlignRightOutlined,
-    VerticalLeftOutlined,
-    VerticalRightOutlined,
-    BorderVerticleOutlined,
     ColumnWidthOutlined,
     ColumnHeightOutlined,
     DeleteOutlined,
     VerticalAlignTopOutlined,
     VerticalAlignMiddleOutlined,
     VerticalAlignBottomOutlined,
-    BorderTopOutlined,
-    BorderBottomOutlined,
+    DownloadOutlined,
+    FilePdfOutlined,
+    UploadOutlined,
 } from '@ant-design/icons'
 
-import LeftAlign from '../assets/leftAlign.svg'
 import { 
     useHistory,
     useActives,
     useApp,
     useRoot,
+    useSerialize
 } from '../core/hooks/appHook'
+
 import { useKeyboardEvent } from '../core/hooks/eventHook'
+
+import { toLookup } from '../core/utils'
+import SelectEditor from '../fragments/SelectEditor'
+
+import exportPDF from '../scripts/exportPDF'
+import FilSaver from 'file-saver'
 
 const LeftAlignIcon: React.FC = (props) => (
     <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1633" {...props}>
@@ -52,7 +69,11 @@ const CenterYAlignIcon: React.FC = (props) => (
 const BottomAlignIcon: React.FC = (props) => (
     <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2448" {...props}><path d="M764.017778 668.728889h-56.888889v-227.555556h56.888889z" p-id="2449"></path><path d="M775.964444 708.807111l-40.220444 40.220445-120.689778-120.689778 40.220445-40.220445z" p-id="2450"></path><path d="M735.573333 749.198222l-40.220444-40.248889 120.661333-120.661333 40.248889 40.220444zM344.177778 748.942222v-568.888889h227.555555v568.888889zM116.622222 748.942222v-341.333333h170.666667v341.333333zM59.733333 862.72v-56.888889h853.333334v56.888889z" p-id="2451"></path></svg>)
 
+const IncreaseLayerIcon: React.FC = (props) => (
+<svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="933" {...props}><path d="M677.831111 483.555556v56.888888h170.666667v341.333334h-341.333334v-170.666667h-56.888888v227.555556h455.111111V483.555556h-227.555556z" p-id="934"></path><path d="M52.053333 85.333333h568.888889v568.888889h-568.888889z" p-id="935"></path></svg>)
 
+const DecreaseLayerIcon: React.FC = (props) => (
+<svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1094" {...props}><path d="M585.671111 597.333333h-455.111111V142.222222h455.111111z m56.888889-512h-568.888889v568.888889h568.888889z" p-id="1095"></path><path d="M699.448889 483.555556v227.555555h-227.555556v227.555556h455.111111V483.555556h-227.555555z" p-id="1096"></path></svg>)
 
 const xPositionMenuItems = [
     {
@@ -125,13 +146,112 @@ const yAlignMenuItems = [
       icon: <Icon component={BottomAlignIcon}/>,
     },
 ]
-const ToolBar: React.FC<any> = (porps) => {
+
+const layerManageItem = [
+    {
+      label: '上移一层',
+      key: 'increase',
+      icon: <Icon component={IncreaseLayerIcon}/>,
+    },
+    {
+      label: '下移一层',
+      key: 'decrease',
+      icon: <Icon component={DecreaseLayerIcon}/>,
+    },
+]
+
+
+
+function useLayer(){
+    const { components, batchMerge } = useApp()
+    const layerComponentLookup = toLookup(components, c => c.props.layer)
+    const layers = Array.from(layerComponentLookup.keys())
+    const maxLayer = Math.max(...layers)
+
+    function inner(id: string){
+        const component = components.filter(c => c.id === id)
+        if(component.length <= 0){
+            throw new Error('can find component ' + id)
+        }
+        const layer = component[0].props.layer
+        function increse(){
+            let nextLayer = layer + 1
+            while(nextLayer <= maxLayer){
+                if(layerComponentLookup.has(nextLayer)){
+                    break
+                }
+                nextLayer += 1
+            }
+            if(nextLayer > maxLayer){
+                return
+            }
+            const nextLayerComponent = layerComponentLookup.get(nextLayer)!
+            batchMerge([
+                [id, {layer: nextLayer}],
+                [nextLayerComponent.id, {layer}]
+            ])
+        }
+        function decrese(){
+            let nextLayer = layer - 1
+            while(nextLayer >= 1){
+                if(layerComponentLookup.has(nextLayer)){
+                    break
+                }
+                nextLayer -= 1
+            }
+            if(nextLayer < 1){
+                return
+            }
+            const nextLayerComponent = layerComponentLookup.get(nextLayer)!
+            batchMerge([
+                [id, {layer: nextLayer}],
+                [nextLayerComponent.id, {layer}]
+            ])
+        }
+        return {
+            increse,
+            decrese
+        }
+    }
+    return inner
+}
+
+
+type ToolBarProps = {
+    container?: HTMLElement
+}
+
+const ToolBar: React.FC<ToolBarProps> = (porps) => {
     const {redo, undo} = useHistory()
     const {actives, activeIds} = useActives()
-    const {batchMerge, remove} = useApp()
+    const {batchMerge, remove, activite, components} = useApp()
     const { root } = useRoot()
     const activeMoreThanOne = activeIds.length > 1
-    
+    const layerManage = useLayer()
+    const firstActiveId = activeIds[0]
+    const [showModal, setShowModal] = React.useState(false)
+    const [name, setName] = React.useState('')
+    const [exportType, setExportType] = React.useState("JSON")
+    const {serialize, deserialize} = useSerialize()
+    const {
+        container,
+    } = porps
+
+    const exportItem = [
+        {
+          label: '保存为PDF文件',
+          key: 'pdf',
+          icon: <FilePdfOutlined/>,
+        },
+        {
+          label: '保存为JSON文件(可导入)',
+          key: 'json',
+          icon: (
+            <FilePdfOutlined/>
+          ),
+        },
+    ]
+
     useKeyboardEvent((e) => {
         if(e.code !== 'KeyZ'){
             return
@@ -269,10 +389,54 @@ const ToolBar: React.FC<any> = (porps) => {
             case "bottom": alignBottomWithFirst(); break;
         }
     }
-    
+
+    function changeLayer(type: string){
+        if(!firstActiveId){
+            return
+        }
+        if(type === 'increase'){
+            layerManage(firstActiveId).increse()
+        }else if(type === 'decrease'){
+            layerManage(firstActiveId).decrese()
+        }
+    }
+
+    function exportToFile(){
+        if(name.trim().length === 0){
+            message.warn("简历名称不能为空")
+            return
+        }
+        setShowModal(false)
+        if(exportType === "PDF"){
+            activite([])
+            setTimeout(() => (container && exportPDF(name, container)), 0)
+        }else if(exportType === "JSON"){
+            const blob = new Blob([serialize()], {type: "text/plain;charset=utf-8"});
+            FilSaver.saveAs(blob, `${name}.keli`);
+        }
+    }
+
+    const handleChange = (file: RcFile) => {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => deserialize(reader.result as string))
+        reader.readAsText(file)
+    }
+
     return (
         <>
-            <Row justify='center'>
+            <Row justify='center' align='middle'>
+                <Col>
+                    <Upload
+                        beforeUpload={handleChange}
+                        accept=".keli"
+                        showUploadList={false}
+                        maxCount={1}
+                        multiple={false}
+                    >
+                        <Button icon={<UploadOutlined/>} size="large" type="text"></Button>
+                    </Upload>
+                </Col>
+
                 <Col><Button size="large" type="text" onClick={undo} icon={<UndoOutlined />}/></Col>
                 <Col><Button size="large" type="text" onClick={redo} icon={<RedoOutlined />}/></Col>
                 <Col>
@@ -298,11 +462,48 @@ const ToolBar: React.FC<any> = (porps) => {
                         <Button icon={<Icon component={TopAlignIcon}/>} size="large" type="text"></Button>
                     </Dropdown >
                 </Col>
+
+                <Col>
+                    <Dropdown overlay={<Menu items={layerManageItem} onClick={e => changeLayer(e.key)} />} >
+                        <Button icon={<Icon component={IncreaseLayerIcon}/>} size="large" type="text"></Button>
+                    </Dropdown >
+                </Col>
  
                 <Col><Button size="large" type="text" onClick={fullWidth} icon={<ColumnWidthOutlined /> }/></Col>
                 <Col><Button size="large" type="text" onClick={fullHeight} icon={<ColumnHeightOutlined /> }/></Col>
                 <Col><Button size="large" type="text" disabled={actives.length <= 0} onClick={deleteAll} icon={<DeleteOutlined /> }/></Col>
+                <Col>
+                    <Button onClick={() => setShowModal(!showModal)} icon={<DownloadOutlined/>} size="large" type="text"></Button>
+                </Col>
+               
             </Row>
+            
+            <Modal
+                open={showModal}
+                title="请输入简历名称"
+                onCancel={() => setShowModal(false)}
+                onOk={() => exportToFile()}
+                okText="下载"
+                cancelText="取消"
+            >
+                
+                <Input 
+                    addonBefore={
+                        (
+                            <SelectEditor
+                                options={[
+                                    {name: "保存为PDF", value: "PDF"},
+                                    {name: "保存为JSON(可导入)", value: "JSON"}
+                                ]}
+                                value={exportType}
+                                onChange={e => setExportType(e)}
+                            />
+                        )
+                    }
+                    onChange={e => setName(e.target.value)}
+                />
+            </Modal>
+        
         </>
     )
 }

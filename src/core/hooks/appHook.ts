@@ -5,6 +5,7 @@ import {
     add,
     setState,
     DEFAULT_ROOT,
+    init
 } from '../context/app'
 
 import { 
@@ -40,7 +41,9 @@ function useActives(){
      }
 }
 
-type PartialComponent = OptionalPartial<Component, 'parent'|'children'|'id'>
+type PartialComponent = OptionalPartial<Component, 'parent'|'children'|'id'> & {
+    props: OptionalPartial<Component['props'], 'layer'>
+}
 
 function useApp(){
     const dispatch = useDispatch()
@@ -50,6 +53,11 @@ function useApp(){
         let component = {...defaults, ...partialComponent}
         if(!component.id){
             component = {...component, id: uuidv4()}
+        }
+        if(!component.props.layer){
+            const maxLayer = Math.max(...components.map(c => c.props.layer))
+            const props: Cprops = {...component.props, layer: maxLayer + 1}
+            component = {...component, props}
         }
         dispatch(add(component as Component))
         return component as Component
@@ -73,6 +81,7 @@ function useApp(){
         components,
         add: addComponet,
         activite: (ids: string[]) => dispatch(activite(ids)),
+        deActivite: () => dispatch(activite([])),
         remove: (ids: string[]) => dispatch(remove(ids)),
         merge: (id: string, props: Partial<Cprops>) => merge([[id, props]]),
         set: (id: string, props: Cprops) => dispatch(setProps([[id, props]])),
@@ -100,10 +109,26 @@ function useHistory(){
     }
 }
 
+function useSerialize(){
+    const { components } = useApp()
+    const dispatch = useDispatch()
+
+    return {
+        serialize(){
+            return JSON.stringify(components)
+        },
+        deserialize(json: string){
+            const components = JSON.parse(json) as Component[]
+            return dispatch(init(components))
+        }
+    }
+}
+
 export {
     useActives,
     useApp,
     useRoot,
     useHistory,
+    useSerialize,
 }
 

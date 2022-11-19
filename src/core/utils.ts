@@ -1,4 +1,5 @@
 import { EditorProps } from '../types/types'
+import type { RcFile } from "antd/es/upload/interface";
 
 function parseNumberFromStyle(style: undefined): undefined
 function parseNumberFromStyle(style: number | string): number
@@ -127,6 +128,19 @@ function toLookup<T, K extends string|number|Symbol>(array: T[], key: (e: T) => 
     return res
 }
 
+function splitByKeys<O, K extends keyof O>(obj: O, keys: K[]): [Omit<O, K>, Pick<O, K>]{
+    const entries = Object.entries(obj as any)
+    const obj1 = Object.fromEntries(entries.filter(([k, v]) => keys.includes(k as any)))
+    const obj2 = Object.fromEntries(entries.filter(([k, v]) => !keys.includes(k as any)))
+    return [obj2, obj1] as any
+}
+
+const getBase64 = (img: File, callback: (url: string) => void) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => callback(reader.result as string));
+    reader.readAsDataURL(img);
+}
+
 export {
     parseNumberFromStyle,
     removeKeys,
@@ -140,6 +154,8 @@ export {
     firstLower,
     toArray,
     toLookup,
+    splitByKeys,
+    getBase64,
 }
 
 export type {

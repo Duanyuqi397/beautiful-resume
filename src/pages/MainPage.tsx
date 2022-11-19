@@ -1,23 +1,15 @@
-import { Row, Col, Button, Input } from "antd";
+import { Row, Col, } from "antd";
 import "./MainPage.css";
 import importComponents from "../scripts/importComponents";
 import { Component } from '../core/types'
 import ConfigPanel from "../fragments/ConfigPanel"
-import React, {
-  useState,
-  useLayoutEffect,
-  useRef,
-  useEffect,
-} from "react";
-
-
+import {useState, useEffect} from "react";
 import AuxiliaryLine from "../fragments/AuxiliaryLine";
 import CandidatePanel from "../fragments/CandidatePanel"
-import { adjustImage }  from "../scripts/utils";
-import edit from "../assets/others/edit.svg";
+import { adjustImage, getBase64 }  from "../core/utils";
 import dictionary from "../assets/others/dictionary.svg";
 import config from "../assets/others/config.svg";
-import exportPDF from "../scripts/exportPDF";
+
 import { 
   useApp, 
   useActives, 
@@ -48,9 +40,10 @@ export const MainPage = () => {
     }
   })
 
-  const [title,setTitle] = useState("我的简历")
-
   useKeyboardEvent(e => {
+      if(e.code !== "Backspace" && e.code !== "Delete"){
+        return
+      }
       const target = e.target as HTMLElement;
       if (
         target.contentEditable === "true" ||
@@ -60,7 +53,7 @@ export const MainPage = () => {
         return;
       }
       remove(actives.map(c => c.id))
-    }, "Backspace")
+    })
 
   useCopyPasteEvent('paste', (e) => {
     if (!e.clipboardData?.items) return;
@@ -81,27 +74,30 @@ export const MainPage = () => {
     })
     const imgInfo = imgData?.getAsFile();
     if (imgInfo) {
-      const url = URL.createObjectURL(imgInfo);
+      getBase64(imgInfo, (url) => {
+        if(imageRender.defaultProps){
+          const [componentWidth] = imageRender.defaultProps.size;
+          adjustImage(url, componentWidth).then(
+            (data) => {
+              add({
+                type: "BaseImg",
+                props: {
+                  size: [data.componentWidth, data.realHeight],
+                  position: [10, 10],
+                  keepRatio: true,
+                  style: {
+                    position: 'absolute'
+                  },
+                  url,
+                  layer: 0
+                }
+              })
+            }
+          )
+        }
+      })
       const imageRender = renders.get("BaseImg") as any
-      if(imageRender.defaultProps){
-        const [componentWidth] = imageRender.defaultProps.size;
-        adjustImage(url, componentWidth).then(
-          (data) => {
-            add({
-              type: "BaseImg",
-              props: {
-                size: [data.componentWidth, data.realHeight],
-                position: [10, 10],
-                keepRatio: true,
-                style: {
-                  position: 'absolute'
-                },
-                url
-              }
-            })
-          }
-        )
-      }
+      
     }
   })
 
@@ -114,26 +110,14 @@ export const MainPage = () => {
     e.preventDefault();
   })
 
-  function onExportPDF(){
-    container && exportPDF(title, container);
-  }
 
   return (
     <div>
       <div className="header">
-          <div className="header-title">
-            <img src={edit} alt="" />
-            <Input placeholder="输入你的简历名字" 
-              className="input-header" 
-              onBlur={e => setTitle(e.target.value)}
-              // onPressEnter={e => setTitle(e.target)}
-            />
-          </div>
-          <ToolBar/>
-        <Button onClick={onExportPDF}>导出PDF</Button>
+        <ToolBar container={container}/>
       </div>
       <div>
-        <Row>
+        <Row align="stretch">
           <Col span={4}>
             <div className="component-lib block">
               <div className="component-lib-title">
@@ -152,7 +136,6 @@ export const MainPage = () => {
               </div>
             </div>
           </Col>
-          {/* 预览区域 */}
           <Col span={16}>
             <div className="view-area block">{render()}</div>
           </Col>

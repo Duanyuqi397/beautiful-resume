@@ -1,6 +1,6 @@
 import * as utils from '../src/scripts/utils'
 import * as constants from '../src/scripts/constants'
-
+import { splitByKeys  } from '../src/core/utils'
 test('parse style', () => {
     expect(utils.parseNumberFromStyle(12)).toBe(12)
     expect(utils.parseNumberFromStyle("12px")).toBe(12)
@@ -96,3 +96,15 @@ test("group by", () => {
         });
     }
 )
+
+test('split by key', () => {
+    const obj = {
+        "a": 1,
+        "b": 2,
+        "c": 3
+    }
+    expect(splitByKeys(obj, ["a"])).toStrictEqual([
+        {"b": 2, "c": 3},
+        {"a": 1}
+    ])
+})

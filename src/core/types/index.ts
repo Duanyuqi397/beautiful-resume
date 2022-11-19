@@ -18,7 +18,8 @@ type ResizeBarProps = {
 
 type BoxProps = {
     size: Size,
-    position: Position
+    position: Position,
+    layer: number,
 }
 
 type DragAndResizeProps = BoxProps & {

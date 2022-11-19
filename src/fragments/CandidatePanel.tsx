@@ -64,7 +64,8 @@ function CandidatePanel(props: CandidatePanelProps){
     const initProps: Cprops = {
       style: { left: 0, top: 0, position: "absolute"},
       position: [left, top],
-      size: [0, 0]
+      size: [0, 0],
+      layer: 0,
     }
     const render = renders.get(type)
     if (!render) {

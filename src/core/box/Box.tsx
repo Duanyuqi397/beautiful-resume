@@ -5,6 +5,7 @@ import { Component } from '../types'
 import * as React from 'react'
 import { getDragStyle } from './styleUtils'
 import ResizeBar from './ResizeBar'
+import { splitByKeys } from '../utils'
 
 const BoxComponent: React.FC<Component & {inner: React.ReactElement}> =  (component) => {
     const {actives, activeIds} = useActives()
@@ -91,20 +92,28 @@ const BoxComponent: React.FC<Component & {inner: React.ReactElement}> =  (compon
             />
         )
     }
-
+    const [
+        htmlProps,
+        {
+            size,
+            position,
+            layer
+        }
+    ] = splitByKeys(props, ['size', 'position', 'layer', 'canDrag', 'canResize', 'keepRatio'])
     const wrapperedChildren = React.cloneElement(
         inner as React.ReactElement,
         {
-            ...props,
+            ...htmlProps,
             onMouseDown: handleMouseDown, 
             onMouseUp: handleMouseUp,
             onClick: handleClick,
             style: {
-                ...props.style, 
-                ...getDragStyle(props.position),
-                cursor: component.canDrag === false ? "": "move",
-                width: props.size[0],
-                height: props.size[1]
+                ...htmlProps.style, 
+                ...getDragStyle(position),
+                cursor: component.canDrag === false ? "" : "move",
+                width: size[0],
+                height: size[1],
+                zIndex: layer
             },
             key: component.id
         }

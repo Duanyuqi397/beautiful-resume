@@ -33,7 +33,6 @@ function useRender(renderLookup: ComponentRedners){
         }
         const eventHandlers = {
             onClick(e: MouseEvent){
-                console.info(e.target, e.currentTarget)
                 if(component.id === root.id){
                     activite([])
                 }else{

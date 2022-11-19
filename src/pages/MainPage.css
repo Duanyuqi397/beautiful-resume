@@ -1,7 +1,7 @@
 .header {
     background-color: #fff;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     height: 60px;
     text-align: start;
@@ -47,6 +47,7 @@ img {
     box-shadow: 5px 0px 10px 2px #DEDEDE;
     position: relative;
     z-index: 90;
+    height: 100%;
 }
 
 .component-lib-title, 
@@ -60,14 +61,14 @@ img {
 
 .block {
     border: 1px solid var(--mainLine);
-    height: 100vh;
 }
 
 .view-area {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     background-color: #E3E4E8;
+    padding-top: 16px;
+    padding-bottom: 16px;
 }
 
 .view-area li {
@@ -82,6 +83,7 @@ img {
     box-shadow: -5px 0px 10px 2px #DEDEDE;
     position: relative;
     z-index: 90;
+    height: 100%;
 }
 
 .component-list {

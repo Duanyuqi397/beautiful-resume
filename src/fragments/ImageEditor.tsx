@@ -4,13 +4,7 @@ import type { UploadChangeParam } from "antd/es/upload";
 import type { RcFile, UploadFile, UploadProps } from "antd/es/upload/interface";
 import React, { useState } from "react";
 import { BaseEditorProps } from "../types/types";
-
-const getBase64 = (img: RcFile, callback: (url: string) => void) => {
-  const reader = new FileReader();
-  reader.addEventListener("load", () => callback(reader.result as string));
-  reader.readAsDataURL(img);
-};
-
+import { getBase64 } from "../core/utils"
 
 type ImageEditorProps = BaseEditorProps<string>;
 type urlType = "net" | "local";

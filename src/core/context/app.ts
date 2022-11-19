@@ -17,7 +17,8 @@ const DEFAULT_ROOT: RootComponent = {
   props: {
     id: "root-container",
     position: [0, 0],
-    size: [842, 595],
+    size: [635, 898],
+    layer: 0,
     style: {
       backgroundColor: "white",
       position: "relative",
@@ -49,6 +50,10 @@ const appSlice = createSlice({
           c.children.push(newComponent.id) 
         }
       })
+    },
+
+    init(state, action: PayloadAction<Component[]>){
+      state.components = action.payload
     },
 
     setProps(state, action: PayloadAction<SetPropsPayload[]>) {
@@ -114,6 +119,7 @@ export const {
   deactivite, 
   remove,
   setState,
+  init,
 } = appSlice.actions
 export { DEFAULT_ROOT}
 export default appSlice.reducer
