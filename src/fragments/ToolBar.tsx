@@ -10,7 +10,7 @@ import { Col,
     Upload,
 } from 'antd';
 
-import type { UploadChangeParam, UploadFile, RcFile } from 'antd/es/upload';
+import type { RcFile } from 'antd/es/upload';
 
 import Icon, { 
     UndoOutlined, 
@@ -27,6 +27,9 @@ import Icon, {
     DownloadOutlined,
     FilePdfOutlined,
     UploadOutlined,
+    CloudUploadOutlined,
+    SyncOutlined,
+    CloseCircleTwoTone,
 } from '@ant-design/icons'
 
 import { 
@@ -44,6 +47,7 @@ import SelectEditor from '../fragments/SelectEditor'
 
 import exportPDF from '../scripts/exportPDF'
 import FilSaver from 'file-saver'
+import { AppContext } from '../core/types'
 
 const LeftAlignIcon: React.FC = (props) => (
     <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1633" {...props}>
@@ -217,6 +221,16 @@ function useLayer(){
 }
 
 
+function getIconStatus(status: AppContext['syncStatus']): React.ReactElement{
+    console.info(status)
+    switch(status){
+        case 'processing': return <Button size="large" type="text" icon={<SyncOutlined spin={true} /> }/>
+        case 'idle': return <Button size="large" type="text" icon={<CloudUploadOutlined />}/>
+        case 'failed': return <Button size="large" type="text" icon={<CloseCircleTwoTone twoToneColor="	#FF0000" />}/>
+    }
+    return <Button size="large" type="text" icon={<CloudUploadOutlined />}/>
+}
+
 type ToolBarProps = {
     container?: HTMLElement
 }
@@ -224,7 +238,7 @@ type ToolBarProps = {
 const ToolBar: React.FC<ToolBarProps> = (porps) => {
     const {redo, undo} = useHistory()
     const {actives, activeIds} = useActives()
-    const {batchMerge, remove, activite, components} = useApp()
+    const {batchMerge, remove, activite, syncStatus} = useApp()
     const { root } = useRoot()
     const activeMoreThanOne = activeIds.length > 1
     const layerManage = useLayer()
@@ -236,21 +250,6 @@ const ToolBar: React.FC<ToolBarProps> = (porps) => {
     const {
         container,
     } = porps
-
-    const exportItem = [
-        {
-          label: '保存为PDF文件',
-          key: 'pdf',
-          icon: <FilePdfOutlined/>,
-        },
-        {
-          label: '保存为JSON文件(可导入)',
-          key: 'json',
-          icon: (
-            <FilePdfOutlined/>
-          ),
-        },
-    ]
 
     useKeyboardEvent((e) => {
         if(e.code !== 'KeyZ'){
@@ -264,6 +263,22 @@ const ToolBar: React.FC<ToolBarProps> = (porps) => {
             }
         }
     })
+
+    React.useEffect(() => {
+        const { localStorage } = window
+        const components = []
+        if(localStorage.length === 0){
+            return
+        }
+        for(let i = 0; i < localStorage.length; i++){
+            const key = localStorage.key(i)
+            if(key?.startsWith("app-")){
+                components.push(localStorage.getItem(key))
+            }
+        }
+        const json = `[${components.join(",")}]`
+        deserialize(json)
+    }, [])
 
     function alignLeftWith(x: number){
         batchMerge(actives.map(c => [c.id, {position: [x, c.props.position[1]]}]))
@@ -474,6 +489,12 @@ const ToolBar: React.FC<ToolBarProps> = (porps) => {
                 <Col><Button size="large" type="text" disabled={actives.length <= 0} onClick={deleteAll} icon={<DeleteOutlined /> }/></Col>
                 <Col>
                     <Button onClick={() => setShowModal(!showModal)} icon={<DownloadOutlined/>} size="large" type="text"></Button>
+                </Col>
+
+                <Col>
+                    {
+                        getIconStatus(syncStatus)
+                    }
                 </Col>
                
             </Row>

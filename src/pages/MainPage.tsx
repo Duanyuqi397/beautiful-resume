@@ -9,6 +9,7 @@ import CandidatePanel from "../fragments/CandidatePanel"
 import { adjustImage, getBase64 }  from "../core/utils";
 import dictionary from "../assets/others/dictionary.svg";
 import config from "../assets/others/config.svg";
+import { client } from '../core/network'
 
 import { 
   useApp, 
@@ -27,7 +28,7 @@ const renders = importComponents(
 
 
 export const MainPage = () => {
-  const { add, remove } = useApp()
+  const { add, remove, merge} = useApp()
   const { actives } = useActives()
   const { root } = useRoot()
   const render = useRender(renders)
@@ -55,7 +56,7 @@ export const MainPage = () => {
       remove(actives.map(c => c.id))
     })
 
-  useCopyPasteEvent('paste', (e) => {
+  useCopyPasteEvent('paste', async (e) => {
     if (!e.clipboardData?.items) return;
     const data = e.clipboardData.items;
     const imgData = Array.from(data).find(
@@ -73,31 +74,29 @@ export const MainPage = () => {
       add({...component, id: undefined}) // remove 
     })
     const imgInfo = imgData?.getAsFile();
+
+
     if (imgInfo) {
-      getBase64(imgInfo, (url) => {
-        if(imageRender.defaultProps){
-          const [componentWidth] = imageRender.defaultProps.size;
-          adjustImage(url, componentWidth).then(
-            (data) => {
-              add({
-                type: "BaseImg",
-                props: {
-                  size: [data.componentWidth, data.realHeight],
-                  position: [10, 10],
-                  keepRatio: true,
-                  style: {
-                    position: 'absolute'
-                  },
-                  url,
-                  layer: 0
-                }
-              })
-            }
-          )
+      const imageRender = renders.get("BaseImg") as any
+      const url = URL.createObjectURL(imgInfo)
+      const [componentWidth] = imageRender.defaultProps.size
+      const {realHeight} = await adjustImage(url, componentWidth)
+      const {id} =  add({
+        type: "BaseImg",
+        props: {
+          size: [componentWidth, realHeight],
+          position: [10, 10],
+          keepRatio: true,
+          style: {
+            position: 'absolute'
+          },
+          url,
+          layer: 0
         }
       })
-      const imageRender = renders.get("BaseImg") as any
-      
+      client.post("/file")
+      .then(res => res.data)
+      .then(url => merge(id, {remoteURL: url.url}))
     }
   })
 

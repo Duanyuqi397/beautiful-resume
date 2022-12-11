@@ -1,3 +1,5 @@
+import { Reducer, AnyAction } from '@reduxjs/toolkit' 
+
 type Number2 = [number, number]
 type Position = Number2
 type Size = Number2
@@ -45,6 +47,10 @@ type Component = {
     state?: ComponentState
 }
 
+type ComponentWithSyncTime = Component & {
+    syncTime: number
+}
+
 type RootComponent = {
     id: string,
     props: Cprops & {id: string},
@@ -59,9 +65,11 @@ type RootComponent = {
 
 type ComponentRedners = Map<string, React.FC<any>>
 
+type RequestStatus='processing'|'success'|'failed'|'idle'
 type AppContext = {
     components: Component[],
-    actives: string[]
+    actives: string[],
+    syncStatus: RequestStatus
 }
 
 type SetPropsPayload = readonly [Component['id'], Cprops]
@@ -89,7 +97,27 @@ type AuxiliaryLineProps = {
 type OptionalPartial<T, K extends keyof T> = Omit<T, K> & {
     [P in K]?: T[P]
 }
- 
+
+type GeneralReducer = Reducer<AppContext, AnyAction>
+
+
+type DiffType = 'PUT'|'REMOVE'
+
+type Diff = {
+    id: string,
+    type: DiffType
+}
+
+type SyncQueue = {
+    post: Set<string>,
+    put: Set<string>,
+    remove: Set<string>
+}
+
+interface SyncClient{
+    put(resumeId: string, components: ComponentWithSyncTime[]): Promise<any>,
+    remove(resumeId: string, ids: string[]): Promise<any>
+}
 
 export type {
     Position,
@@ -116,4 +144,10 @@ export type {
     ComponentState,
     OptionalPartial,
     RootComponent,
+    GeneralReducer,
+    Diff,
+    RequestStatus,
+    SyncQueue,
+    SyncClient,
+    ComponentWithSyncTime
 }

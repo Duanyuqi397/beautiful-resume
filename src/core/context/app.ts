@@ -8,7 +8,8 @@ import type {
   DeletePayload,
   Component,
   RootComponent,
-  SetStatePayload
+  SetStatePayload,
+  RequestStatus,
 } from '../types'
 
 const DEFAULT_ROOT: RootComponent = {
@@ -34,7 +35,8 @@ const DEFAULT_ROOT: RootComponent = {
 
 const initialState = {
     components: [DEFAULT_ROOT],
-    actives: []
+    actives: [],
+    syncStatus: 'idle'
 } as AppContext
 
 
@@ -108,6 +110,10 @@ const appSlice = createSlice({
       }
       // delete components
       state.components = state.components.filter(c => needKeep(c.id))
+    },
+
+    syncStatus(state, action: PayloadAction<RequestStatus>){
+      state.syncStatus = action.payload
     }
   }
 })
@@ -120,6 +126,7 @@ export const {
   remove,
   setState,
   init,
+  syncStatus,
 } = appSlice.actions
 export { DEFAULT_ROOT}
 export default appSlice.reducer

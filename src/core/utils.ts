@@ -1,6 +1,6 @@
 import { EditorProps } from '../types/types'
 import type { RcFile } from "antd/es/upload/interface";
-
+import  { Component  } from './types'
 function parseNumberFromStyle(style: undefined): undefined
 function parseNumberFromStyle(style: number | string): number
 function parseNumberFromStyle(style: number | string | undefined): undefined | number {
@@ -135,10 +135,26 @@ function splitByKeys<O, K extends keyof O>(obj: O, keys: K[]): [Omit<O, K>, Pick
     return [obj2, obj1] as any
 }
 
-const getBase64 = (img: File, callback: (url: string) => void) => {
+const getBase64 = (img: File): Promise<string> => {
     const reader = new FileReader();
-    reader.addEventListener("load", () => callback(reader.result as string));
-    reader.readAsDataURL(img);
+    return new Promise((resolve) => {
+        reader.addEventListener("load", () => resolve(reader.result as string));
+        reader.readAsDataURL(img);
+    })
+}
+
+function sleep(ms: number){
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, ms)
+    })
+}
+
+function applyRomoteURL(component: Component): Component{
+    if(component.type === "BaseImg" && component.props.remoteURL){
+        component.props.url = component.props.remoteURL
+        component.props.remoteURL = null
+    }
+    return component
 }
 
 export {
@@ -156,6 +172,8 @@ export {
     toLookup,
     splitByKeys,
     getBase64,
+    sleep,
+    applyRomoteURL,
 }
 
 export type {

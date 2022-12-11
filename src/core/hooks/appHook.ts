@@ -23,9 +23,11 @@ import { useSelector, useDispatch } from 'react-redux'
 
 import {v4 as uuidv4} from 'uuid'
 
-import { merge as mergeObject, toLookup } from '../utils'
+import { merge as mergeObject, toLookup, applyRomoteURL } from '../utils'
 
 import { ActionCreators } from "redux-undo";
+
+import { useEvent } from './eventHook'
 
 function useAppSelector<T>(selector: (state: AppContext) => T): T {
     return useSelector((s: any) => selector(s.app.present)) as T
@@ -47,7 +49,7 @@ type PartialComponent = OptionalPartial<Component, 'parent'|'children'|'id'> & {
 
 function useApp(){
     const dispatch = useDispatch()
-    const components = useAppSelector(state => state.components)
+    const {components, syncStatus} = useAppSelector(state => ({components: state.components, syncStatus: state.syncStatus}))
     function addComponet(partialComponent: PartialComponent){
         const defaults = {parent: DEFAULT_ROOT.id, children: []}
         let component = {...defaults, ...partialComponent}
@@ -83,11 +85,12 @@ function useApp(){
         activite: (ids: string[]) => dispatch(activite(ids)),
         deActivite: () => dispatch(activite([])),
         remove: (ids: string[]) => dispatch(remove(ids)),
-        merge: (id: string, props: Partial<Cprops>) => merge([[id, props]]),
+        merge: useEvent((id: string, props: Partial<Cprops>) => merge([[id, props]])),
         set: (id: string, props: Cprops) => dispatch(setProps([[id, props]])),
         batchSet: (batch: SetPropsPayload[]) => dispatch(setProps(batch)),
         batchMerge: (batch: MergePropsPayload[]) => merge(batch),
-        setState: (ids: string[], state: ComponentState) => dispatch(setState({ids: ids, state}))
+        setState: (ids: string[], state: ComponentState) => dispatch(setState({ids: ids, state})),
+        syncStatus,
     }
 }
 
@@ -112,14 +115,13 @@ function useHistory(){
 function useSerialize(){
     const { components } = useApp()
     const dispatch = useDispatch()
-
     return {
         serialize(){
             return JSON.stringify(components)
         },
         deserialize(json: string){
             const components = JSON.parse(json) as Component[]
-            return dispatch(init(components))
+            return dispatch(init(components.map(applyRomoteURL)))
         }
     }
 }

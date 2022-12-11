@@ -16,6 +16,8 @@
     "@types/uuid": "^8.3.4",
     "@wangeditor/editor": "^5.1.15",
     "@wangeditor/editor-for-react": "^1.0.5",
+    "axios": "^1.2.1",
+    "axios-mock-adapter": "^1.21.2",
     "babel-jest": "^29.0.3",
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",

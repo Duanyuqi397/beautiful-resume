@@ -24,9 +24,7 @@ const ImageEditor: React.FC<ImageEditorProps> = (props) => {
       message.error("Image must smaller than 2MB!");
       return;
     }
-    getBase64(file, (url) => {
-      props.onChange(url);
-    });
+    getBase64(file).then(props.onChange)
   };
   
   const onRadioChange = (e: RadioChangeEvent) => {
