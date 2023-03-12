@@ -32,7 +32,7 @@ instance.interceptors.request.use(
 type ResponseInterceptor = (response: AxiosResponse<any, any>) => Promise<any>
 
 const successInterceptor: ResponseInterceptor = (response) => {
-    if(!response.data.data){
+    if(!response.data.data && response.config.method?.toUpperCase() !== "OPTIONS"){
         console.error(`status code is 200, data not found response, url=${response.config.url}, response=${response.data}`)
         return Promise.reject("服务器响应错误")
     }
