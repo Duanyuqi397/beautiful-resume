@@ -1,8 +1,10 @@
 import axios, {AxiosResponse} from 'axios'
 import { message } from 'antd'
 
+const BASE_URL = process.env.NODE_ENV === "development" ? 'http://127.0.0.1:3001':'http://www.keli-resume.cn:14001'
+
 const instance = axios.create({
-    baseURL: 'http://127.0.0.1:3001',
+    baseURL: '',
     timeout: 1000
 })
 
