@@ -222,7 +222,6 @@ function useLayer(){
 
 
 function getIconStatus(status: AppContext['syncStatus']): React.ReactElement{
-    console.info(status)
     switch(status){
         case 'processing': return <Button size="large" type="text" icon={<SyncOutlined spin={true} /> }/>
         case 'idle': return <Button size="large" type="text" icon={<CloudUploadOutlined />}/>
@@ -264,21 +263,21 @@ const ToolBar: React.FC<ToolBarProps> = (porps) => {
         }
     })
 
-    React.useEffect(() => {
-        const { localStorage } = window
-        const components = []
-        if(localStorage.length === 0){
-            return
-        }
-        for(let i = 0; i < localStorage.length; i++){
-            const key = localStorage.key(i)
-            if(key?.startsWith("app-")){
-                components.push(localStorage.getItem(key))
-            }
-        }
-        const json = `[${components.join(",")}]`
-        deserialize(json)
-    }, [])
+    // React.useEffect(() => {
+    //     const { localStorage } = window
+    //     const components = []
+    //     if(localStorage.length === 0){
+    //         return
+    //     }
+    //     for(let i = 0; i < localStorage.length; i++){
+    //         const key = localStorage.key(i)
+    //         if(key?.startsWith("app-")){
+    //             components.push(localStorage.getItem(key))
+    //         }
+    //     }
+    //     const json = `[${components.join(",")}]`
+    //     deserialize(json)
+    // }, [])
 
     function alignLeftWith(x: number){
         batchMerge(actives.map(c => [c.id, {position: [x, c.props.position[1]]}]))

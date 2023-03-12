@@ -4,7 +4,7 @@ import { EditorProps } from "../types/types"
 const baseImgEditor = {
     name:'baseImgEditor',
     component: 'BaseImg',
-    config: {
+config: {
         ...BASE_EDITOR_CONFIG,
         url: EditorProps.fromObject({
             name: "图片选择",

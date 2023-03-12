@@ -10,16 +10,20 @@ import { adjustImage, getBase64 }  from "../core/utils";
 import dictionary from "../assets/others/dictionary.svg";
 import config from "../assets/others/config.svg";
 import { client } from '../core/network'
-
 import { 
   useApp, 
   useActives, 
   useRoot, 
   useKeyboardEvent, 
-  useCopyPasteEvent 
+  useCopyPasteEvent,
+  useSerialize
 } from '../core/hooks'
 import { useRender } from '../core/hooks/renderHook'
 import ToolBar from '../fragments/ToolBar'
+import {
+  useParams
+} from "react-router-dom";
+import { useQuery } from '../core/hooks'
 
 //引入components下的组件
 const renders = importComponents(
@@ -33,10 +37,25 @@ export const MainPage = () => {
   const { root } = useRoot()
   const render = useRender(renders)
   const [container, setContainer] = useState<HTMLElement>()
+  const { resumeId } = useParams() as any
+  const { init } = useSerialize()
+  const [
+    getResume,
+    data
+   ] = useQuery(resumeId => client.get(`/components/${resumeId}`))
+
+  useEffect(() => {
+   if(resumeId){
+    getResume(resumeId)
+      .then(data => {
+        init(data.components, resumeId)
+      })
+   }
+  }, [resumeId])
 
   useEffect(() => {
     const htmlId = root.props.id
-    if(document.getElementById(htmlId)){
+    if(document.getElementById(htmlId) && !container){
       setContainer(document.getElementById(htmlId) as HTMLElement)
     }
   })
@@ -94,9 +113,14 @@ export const MainPage = () => {
           layer: 0
         }
       })
-      client.post("/file")
-      .then(res => res.data)
-      .then(url => merge(id, {remoteURL: url.url}))
+      const formData = new FormData()
+      formData.append("file", imgInfo)
+      client.post("/file", formData, {headers: {'Content-Type': 'multipart/form-data'}})
+      .then((data: any) => {
+        console.info("url", data.url)
+        merge(id, {remoteURL: data.url})
+      })
+      .catch(alert)
     }
   })
 

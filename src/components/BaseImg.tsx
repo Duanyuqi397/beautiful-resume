@@ -16,8 +16,6 @@ const BaseImg: React.FC<BaseImgProps> = (props: any) => {
     groundUrl = `url(${props.url})`
   }
 
-  console.info(url, groundUrl, props)
-
   return (
       <div
         {...htmlProps}

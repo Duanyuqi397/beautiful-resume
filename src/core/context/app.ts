@@ -10,6 +10,7 @@ import type {
   RootComponent,
   SetStatePayload,
   RequestStatus,
+  InitPayload,
 } from '../types'
 
 const DEFAULT_ROOT: RootComponent = {
@@ -36,7 +37,8 @@ const DEFAULT_ROOT: RootComponent = {
 const initialState = {
     components: [DEFAULT_ROOT],
     actives: [],
-    syncStatus: 'idle'
+    syncStatus: 'idle',
+    resumeId: null
 } as AppContext
 
 
@@ -54,8 +56,10 @@ const appSlice = createSlice({
       })
     },
 
-    init(state, action: PayloadAction<Component[]>){
-      state.components = action.payload
+    init(state, action: PayloadAction<InitPayload>){
+      const hasRoot = action.payload.components.some(c => c.id === DEFAULT_ROOT.id)
+      state.components = hasRoot ? action.payload.components: [DEFAULT_ROOT, ...action.payload.components]
+      state.resumeId = action.payload.resumeId
     },
 
     setProps(state, action: PayloadAction<SetPropsPayload[]>) {

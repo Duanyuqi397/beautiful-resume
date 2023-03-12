@@ -8,7 +8,7 @@ import ImageEditor from "./ImageEditor";
 import PositionEditor from "./PositionEditor";
 import ColorPicker from "./ColorPicker";
 import { EDITORS } from "../scripts/constants";
-import * as utils from "../scripts/utils";
+import * as utils from "../core/utils";
 import { ConfigPath } from "../scripts/utils";
 import * as React from "react";
 import importConfigs from "../scripts/importConfigs";

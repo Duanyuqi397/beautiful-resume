@@ -5,6 +5,8 @@ import type { RcFile, UploadFile, UploadProps } from "antd/es/upload/interface";
 import React, { useState } from "react";
 import { BaseEditorProps } from "../types/types";
 import { getBase64 } from "../core/utils"
+import { client } from "../core/network"
+import { useActives, useApp } from "../core/hooks/appHook"
 
 type ImageEditorProps = BaseEditorProps<string>;
 type urlType = "net" | "local";
@@ -12,6 +14,8 @@ type urlType = "net" | "local";
 const ImageEditor: React.FC<ImageEditorProps> = (props) => {
   const [radioValue, setRadioValue] = useState<urlType>("net");
   const [inputValue,setInputValue] = useState("");
+  const { activeIds } = useActives()
+  const { merge } = useApp()
 
   const beforeUpload = (file: RcFile) => {
     const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
@@ -25,6 +29,14 @@ const ImageEditor: React.FC<ImageEditorProps> = (props) => {
       return;
     }
     getBase64(file).then(props.onChange)
+    const formData = new FormData()
+    formData.append("file", file)
+    client.post("/file", formData, {headers: {'Content-Type': 'multipart/form-data'}})
+    .then((data: any) => {
+      console.info("url", data.url)
+      merge(activeIds[0], {remoteURL: data.url})
+    })
+    .catch(alert)
   };
   
   const onRadioChange = (e: RadioChangeEvent) => {

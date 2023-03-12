@@ -7,7 +7,7 @@ import { AppContext,
 } from '../types'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
 import { Middleware } from 'redux'
-import { add, setProps, remove, syncStatus } from './app'
+import { add, setProps, remove, syncStatus, init } from './app'
 import { debounce, toLookup } from '../utils'
 import { SimpleSyncClient } from '../network'
 
@@ -47,8 +47,7 @@ class AutoSaver{
         this.pendingQueue.remove.clear()
     }
 
-    sync(components: Component[]): Promise<any>{
-        this.syncing = true
+    sync(components: Component[], resumeId: string): Promise<any>{
         const componentToLookup = toLookup(components, c => c.id)
         const componentsNeedSync: ComponentWithSyncTime[] = []
         const {
@@ -71,9 +70,11 @@ class AutoSaver{
         if(componentsNeedSync.length <= 0 && remove.size <= 0){
             return Promise.resolve()
         }
+        this.syncing = true
         this.switchQueue()
-        const postRequest = this.client.put("null", componentsNeedSync)
-        const removeRequest = this.client.remove("null", Array.from(remove))
+        const postRequest = componentsNeedSync.length > 0 ?
+                             this.client.put(resumeId, componentsNeedSync): Promise.resolve()
+        const removeRequest = remove.size > 0 ? this.client.remove(resumeId, Array.from(remove)): Promise.resolve()
         return Promise.allSettled([postRequest, removeRequest])
             .then(([p1, p2]) => {
                 let successCount = 0
@@ -99,13 +100,15 @@ class AutoSaver{
 
     syncToServer = debounce((state: AppContext, dispatch: Dispatch<AnyAction>) => {
         dispatch(syncStatus('processing'))
-        this.sync(state.components)
-                .then(status => {
-                    dispatch(syncStatus('success'))
-                })
-                .catch(data => {
-                    dispatch(syncStatus('failed'))
-                })
+        if(state.resumeId){
+            this.sync(state.components, state.resumeId)
+            .then(status => {
+                dispatch(syncStatus('success'))
+            })
+            .catch(data => {
+                dispatch(syncStatus('failed'))
+            })
+        }
     }, 200)
 
     getMiddleWare(): Middleware<any, any>{
@@ -114,10 +117,9 @@ class AutoSaver{
                 const res = next(action)
                 const state = getState().app.present
                 if(action.type === remove.type){
-                   action.payload.forEach(this.syncQueue.remove.add)
+                   action.payload.forEach((item: any) => this.syncQueue.remove.add(item))
                 }
-                console.info(this.syncing)
-                if(action.type !== syncStatus.type && this.syncing === false){
+                if(action.type !== syncStatus.type && action.type !== init.type && this.syncing === false){
                     this.syncToServer(state, dispatch)
                 }
                 if(action.type === add.type){

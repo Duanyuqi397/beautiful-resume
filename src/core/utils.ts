@@ -102,11 +102,13 @@ function groupBy<T, K extends string | number>(array: T[], keyFunc: (item: T) =>
 function adjustImage(url: string, componentWidth: number) {
     const img = new Image();
     img.src = url;
+    console.info(url)
     return new Promise((resolve, reject) => {
         img.onload = resolve
     }).then((e: any) => {
-        const height = e.path[0].naturalHeight;
-        const width = e.path[0].naturalWidth;
+        console.info(e.target.naturalHeight)
+        const height = e.target.naturalHeight;
+        const width = e.target.naturalWidth;
         const realHeight = (componentWidth / width) * height;
         return { componentWidth, realHeight };
     })
@@ -152,7 +154,7 @@ function sleep(ms: number){
 function applyRomoteURL(component: Component): Component{
     if(component.type === "BaseImg" && component.props.remoteURL){
         component.props.url = component.props.remoteURL
-        component.props.remoteURL = null
+        delete component.props.remoteURL
     }
     return component
 }

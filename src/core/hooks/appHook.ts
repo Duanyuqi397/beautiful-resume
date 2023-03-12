@@ -121,7 +121,16 @@ function useSerialize(){
         },
         deserialize(json: string){
             const components = JSON.parse(json) as Component[]
-            return dispatch(init(components.map(applyRomoteURL)))
+            return dispatch(init({
+                components: components.map(applyRomoteURL),
+                resumeId: "$local"
+            }))
+        },
+        init(components: Component[], resumeId: string){
+            return dispatch(init({
+                components: components.map(applyRomoteURL),
+                resumeId
+            }))
         }
     }
 }

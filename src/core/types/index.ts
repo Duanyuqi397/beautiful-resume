@@ -69,7 +69,8 @@ type RequestStatus='processing'|'success'|'failed'|'idle'
 type AppContext = {
     components: Component[],
     actives: string[],
-    syncStatus: RequestStatus
+    syncStatus: RequestStatus,
+    resumeId: string|null
 }
 
 type SetPropsPayload = readonly [Component['id'], Cprops]
@@ -79,6 +80,10 @@ type MergePropsPayload = readonly [Component['id'], Partial<Component['props']>]
 type SetStatePayload = {
     ids: string[],
     state: ComponentState
+}
+type InitPayload = {
+    components: Component[],
+    resumeId: string
 }
 
 
@@ -149,5 +154,6 @@ export type {
     RequestStatus,
     SyncQueue,
     SyncClient,
-    ComponentWithSyncTime
+    ComponentWithSyncTime,
+    InitPayload
 }
