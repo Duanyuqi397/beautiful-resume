@@ -4,7 +4,7 @@ import { message } from 'antd'
 const BASE_URL = process.env.NODE_ENV === "development" ? 'http://127.0.0.1:3001':'http://www.keli-resume.cn:14001'
 
 const instance = axios.create({
-    baseURL: '',
+    baseURL: BASE_URL,
     timeout: 1000
 })
 
