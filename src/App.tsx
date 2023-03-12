@@ -35,6 +35,7 @@ function App() {
           <Route path="/register"><LoginPage/> </Route>
           <Route path="/resumes"><NeedAuth component={<ResumeList/>}/></Route>
           <Route path="/resume/:resumeId"><NeedAuth component={<MainPage/>}/></Route>
+          <Route path="/"><NeedAuth component={<ResumeList/>}/></Route>
         </Switch>
       </Provider>
     </div>
