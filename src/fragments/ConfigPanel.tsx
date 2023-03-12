@@ -64,20 +64,6 @@ const formItemLayout = {
   wrapperCol: { span: 16, offset: 1 },
 };
 
-function useDebounceEffect(
-  func: Function,
-  deps: any[],
-  debounceMs: number = 300
-) {
-  const timerRef = React.useRef<any>(null);
-  useEffect(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    timerRef.current = setTimeout(func, debounceMs);
-  }, deps);
-}
-
 function ConfigPanel() {
   const { actives } = useActives()
   const { merge } = useApp()

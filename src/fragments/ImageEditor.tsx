@@ -28,7 +28,7 @@ const ImageEditor: React.FC<ImageEditorProps> = (props) => {
       message.error("Image must smaller than 2MB!");
       return;
     }
-    getBase64(file).then(props.onChange)
+    // getBase64(file).then(props.onChange)
     const formData = new FormData()
     formData.append("file", file)
     client.post("/file", formData, {headers: {'Content-Type': 'multipart/form-data'}})
@@ -37,6 +37,8 @@ const ImageEditor: React.FC<ImageEditorProps> = (props) => {
       merge(activeIds[0], {remoteURL: data.url})
     })
     .catch(alert)
+    const url = URL.createObjectURL(file)
+    props.onChange(url)
   };
   
   const onRadioChange = (e: RadioChangeEvent) => {
