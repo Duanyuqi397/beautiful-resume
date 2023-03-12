@@ -1,24 +1,28 @@
-const mapNames: Record<string,string> = {
-    "BaseAvatar": "头像",
-    "BaseButton": "按钮",
-    "BaseUnorderedList": "无序列表",
-    "BaseOrderedList": "有序列表",
-    "BaseDivider": "分割线",
-    "BaseLink": "链接",
-    "BaseInput": "输入框",
-    "BaseImg": "图片",
-    "BaseTextArea": "文本编辑",
-    "BaseContainer": "容器"
-};
+import BaseContainer from '../assets/BaseContainer.svg'
+import BaseDivider from '../assets/BaseDivider.svg'
+import BaseTextArea from '../assets/BaseTextArea.svg'
+import BaseImg from '../assets/BaseImg.svg'
+
+// const mapNames: Record<string,string> = {
+//     "BaseAvatar": "头像",
+//     "BaseButton": "按钮",
+//     "BaseUnorderedList": "无序列表",
+//     "BaseOrderedList": "有序列表",
+//     "BaseDivider": "分割线",
+//     "BaseLink": "链接",
+//     "BaseInput": "输入框",
+//     "BaseImg": "图片",
+//     "BaseTextArea": "文本编辑",
+//     "BaseContainer": "容器"
+// };
 
 const importIcons = (req: any): Record<string, string> => {  
-    const entries = req.keys().map((key: any) => [req(key).substring(14,req(key).indexOf('.')),req(key)]);
-    let objectEntries = Object.fromEntries(entries);
-    let obj = new Map<string,string>(); 
-    for (const key in objectEntries) {
-        obj.set(mapNames[key],objectEntries[key]);
+    return {
+        "图片": BaseImg,
+        "文本编辑": BaseTextArea,
+        "分割线": BaseDivider,
+        "容器": BaseContainer
     }
-    return Object.fromEntries(obj);
 }
 
 export default importIcons;
