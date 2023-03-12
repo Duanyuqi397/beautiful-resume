@@ -14,14 +14,16 @@ function useRender(renderLookup: ComponentRedners){
     const componentLookup = new Map(components.map(c => [c.id, c]))
     function render(component: Component): ReactElement{
         const children = component.children
-                .map(childId => {
-                    const child = componentLookup.get(childId)
-                    if(!child){
-                        throw new Error(`child not found!, parent=${component}`)
+                .map(id => {
+                    const component = componentLookup.get(id)
+                    if(!component){
+                        console.error("can't find component with id", id)
+                        return null
                     }
-                    return child
+                    return component
                 })
-                .map(child => render(child));
+                .filter(component => component !== null)
+                .map(child => render(child as Component));
         const isDomElement = firstLower(component.type)
         let elementType: React.FC | string = component.type
         if(!isDomElement){
@@ -40,7 +42,8 @@ function useRender(renderLookup: ComponentRedners){
                     if(component.canActive === false){
                         return
                     }
-                    const existedIds = e.ctrlKey ? activeIds: []
+                    // ctrlKey for windows and metaKey for macos
+                    const existedIds = (e.ctrlKey || e.metaKey) ? activeIds: []
                     activite([...existedIds, component.id])
                 }
                 e.stopPropagation()

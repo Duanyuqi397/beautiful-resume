@@ -58,10 +58,9 @@ const ResumeList: React.FC = () => {
             <Row gutter={16} align="top">
                 {
                     resumes.map(resp => (
-                        <Col span={8}>
+                        <Col span={8} key={resp._id} >
                             <Card
-                                onClick={() => history.push(`resume/${resp._id}`)} 
-                                key={resp._id} 
+                                onClick={() => history.push(`resume/${resp._id}`)}
                                 title={resp.name}
                                 style={{marginBottom: '16px', cursor: 'pointer'}}
                             >

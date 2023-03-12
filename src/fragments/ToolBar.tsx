@@ -244,24 +244,24 @@ const ToolBar: React.FC<ToolBarProps> = (porps) => {
     const firstActiveId = activeIds[0]
     const [showModal, setShowModal] = React.useState(false)
     const [name, setName] = React.useState('')
-    const [exportType, setExportType] = React.useState("JSON")
+    const [exportType, setExportType] = React.useState("PDf")
     const {serialize, deserialize} = useSerialize()
     const {
         container,
     } = porps
 
-    useKeyboardEvent((e) => {
-        if(e.code !== 'KeyZ'){
-            return
-        }
-        if(e.ctrlKey){
-            if(e.shiftKey){
-                redo()
-            }else{
-                undo()
-            }
-        }
-    })
+    // useKeyboardEvent((e) => {
+    //     if(e.code !== 'KeyZ'){
+    //         return
+    //     }
+    //     if(e.ctrlKey){
+    //         if(e.shiftKey){
+    //             redo()
+    //         }else{
+    //             undo()
+    //         }
+    //     }
+    // })
 
     // React.useEffect(() => {
     //     const { localStorage } = window
@@ -439,7 +439,7 @@ const ToolBar: React.FC<ToolBarProps> = (porps) => {
     return (
         <>
             <Row justify='center' align='middle'>
-                <Col>
+                {/* <Col>
                     <Upload
                         beforeUpload={handleChange}
                         accept=".keli"
@@ -449,10 +449,10 @@ const ToolBar: React.FC<ToolBarProps> = (porps) => {
                     >
                         <Button icon={<UploadOutlined/>} size="large" type="text"></Button>
                     </Upload>
-                </Col>
+                </Col> */}
 
-                <Col><Button size="large" type="text" onClick={undo} icon={<UndoOutlined />}/></Col>
-                <Col><Button size="large" type="text" onClick={redo} icon={<RedoOutlined />}/></Col>
+                {/* <Col><Button size="large" type="text" onClick={undo} icon={<UndoOutlined />}/></Col>
+                <Col><Button size="large" type="text" onClick={redo} icon={<RedoOutlined />}/></Col> */}
                 <Col>
                     <Dropdown overlay={<Menu items={xPositionMenuItems} onClick={e => xPlacePosition(e.key)} />} >
                         <Button icon={<AlignLeftOutlined />} size="large" type="text"></Button>
@@ -509,16 +509,17 @@ const ToolBar: React.FC<ToolBarProps> = (porps) => {
                 
                 <Input 
                     addonBefore={
-                        (
-                            <SelectEditor
-                                options={[
-                                    {name: "保存为PDF", value: "PDF"},
-                                    {name: "保存为JSON(可导入)", value: "JSON"}
-                                ]}
-                                value={exportType}
-                                onChange={e => setExportType(e)}
-                            />
-                        )
+                        // (
+                        //     <SelectEditor
+                        //         options={[
+                        //             {name: "保存为PDF", value: "PDF"},
+                        //             {name: "保存为JSON(可导入)", value: "JSON"}
+                        //         ]}
+                        //         value={exportType}
+                        //         onChange={e => setExportType(e)}
+                        //     />
+                        // )
+                        "简历名称"
                     }
                     onChange={e => setName(e.target.value)}
                 />

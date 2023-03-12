@@ -32,13 +32,24 @@ instance.interceptors.request.use(
 type ResponseInterceptor = (response: AxiosResponse<any, any>) => Promise<any>
 
 const successInterceptor: ResponseInterceptor = (response) => {
+    if(!response.data.data){
+        console.error(`status code is 200, data not found response, url=${response.config.url}, response=${response.data}`)
+        return Promise.reject("服务器响应错误")
+    }
     return Promise.resolve(response.data.data)
 }
 
 const failedInterceptor: (error: any) => any = (error) => {
-    const data = error.response.data
-    if(data?.message){
-        return Promise.reject(data.message)
+    let message = error.response?.data?.message
+    if(message){
+        return Promise.reject(message)
+    }
+    message = error.message
+    console.info(error)
+    if(message?.includes("timeout")){
+        return Promise.reject("请求超时，请稍后再试")
+    }else if(message === "Network Error"){
+        return Promise.reject("您的网络似乎出现了一点问题")
     }
     return Promise.reject(error)
 }
