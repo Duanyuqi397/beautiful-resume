@@ -104,6 +104,7 @@ export default function Login(){
                 <Button block disabled={registerStatus === 'processing' || loginStatus === 'processing'} type="primary" htmlType="submit">
                     {mode === 'login' ? '登录': '注册'}
                 </Button>
+                <a onClick={() => history.push('register')}>没有用户?去注册</a>
             </Form.Item>
         </Form>
             </div>
