@@ -70,7 +70,12 @@ function useApp(){
         const propsWithId = partialPropsWithId.map(([id, props]) => {
             const component = componentLookup.get(id)
             if(component){
-                return [id, mergeObject(component.props, props)]
+                const tempProps = JSON.parse(JSON.stringify(props));
+                if(props.customStyle !== undefined){
+                    Object.assign(tempProps.style, JSON.parse(tempProps.customStyle));
+                    // delete tempProps.customStyle
+                }
+                return [id, mergeObject(component.props, tempProps)]
             }
             return null
         })
@@ -85,7 +90,9 @@ function useApp(){
         activite: (ids: string[]) => dispatch(activite(ids)),
         deActivite: () => dispatch(activite([])),
         remove: (ids: string[]) => dispatch(remove(ids)),
-        merge: useEvent((id: string, props: Partial<Cprops>) => merge([[id, props]])),
+        merge: useEvent((id: string, props: Partial<Cprops>) => {
+            merge([[id, props]])
+        }),
         set: (id: string, props: Cprops) => dispatch(setProps([[id, props]])),
         batchSet: (batch: SetPropsPayload[]) => dispatch(setProps(batch)),
         batchMerge: (batch: MergePropsPayload[]) => merge(batch),

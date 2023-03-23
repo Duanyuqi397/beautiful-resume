@@ -9,7 +9,8 @@ const EDITORS = {
     uploader: "Uploader" as EditorType,
     position: "position" as EditorType,
     colorPicker: "colorPicker" as EditorType,
-    image: "image" as EditorType
+    image: "image" as EditorType,
+    textArea: "TextArea" as EditorType
 }
 
 const Validtors = {
@@ -100,13 +101,18 @@ const FIELDS = {
         type: EDITORS.input,
         group: ""
     }),
+    customStyle: EditorProps.fromObject({
+        name: "自定义样式",
+        defaultValue: {},
+        type: EDITORS.input
+    })
 }
 
 const BASE_EDITOR_CONFIG: {
     style: {
         [P in keyof CSSProperties]: EditorProps
     },
-    //position: EditorProps
+    customStyle?: EditorProps
 } = {
     style: {
         borderRadius: FIELDS.borderRadius,
@@ -116,12 +122,13 @@ const BASE_EDITOR_CONFIG: {
         backgroundColor: FIELDS.backgroundColor,
         borderWidth: FIELDS.borderWidth,
         borderStyle: FIELDS.borderStyle, 
+        // ...FIELDS.customStyle
     },
-    // position: EditorProps.fromObject({
-    //     name: "位置",
-    //     group: "位置",
-    //     type: EDITORS.position
-    // })
+    customStyle: EditorProps.fromObject({
+        name: "自定义样式",
+        group: "样式",
+        type: EDITORS.input
+    })
 }
 
 export {
