@@ -128,6 +128,7 @@ export const MainPage = () => {
     if(actives.length !== 1){
       return;
     }
+    if(window.getSelection()?.toString()) return;
     const activeComponent = actives[0]
     e.clipboardData?.setData('text/plain', JSON.stringify(activeComponent));
     e.preventDefault();
